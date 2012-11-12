@@ -1,0 +1,18 @@
+(if (not (boundp *irtviewer*)))
+
+(load "irteus/demo/sample-arm-model.l")
+(setq *sarm* (instance sarmclass :init))
+(send *sarm* :reset-pose)
+(setq *target* (make-coords :pos #f(350 200 400)))
+(objects (list *sarm* *target*))
+
+(do-until-key
+ ;; step 3
+ (setq c (send *sarm* :end-coords))
+ (send c :draw-on :flush t)
+ ;; step 4
+ (setq dp (scale 0.0001 (v- (send *target* :worldpos) (send c :worldpose)))
+       
+       
+
+       

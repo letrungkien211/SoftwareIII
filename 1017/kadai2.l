@@ -1,0 +1,3 @@
+(defun print-dot (n)
+  (dotimes (i n nil)
+    (format t ".")))
