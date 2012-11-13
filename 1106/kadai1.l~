@@ -1,0 +1,11 @@
+(setq sun (make-sphere 50))
+(setq earth (make-sphere 20))
+(setq moon (make-sphere 5))
+
+(send sun :set-color :red)
+(send earth :set-color :blue)
+(send moon :set-color :yellow)
+
+(send sun :assoc earth)
+(send earth :assoc moon)
+

@@ -1,0 +1,3 @@
+(defclass my2-model nil
+  :super cascaded-link
+  :slots (h1 h2 j1)
