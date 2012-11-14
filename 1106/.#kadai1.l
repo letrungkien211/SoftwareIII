@@ -1,1 +1,0 @@
-letrungkien7@letrungkien7-ThinkPad3-T400s.8081:1352695404
