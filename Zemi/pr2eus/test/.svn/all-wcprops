@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svnroot/jsk-ros-pkg/!svn/ver/3544/trunk/pr2eus/test
+END
+pr1012_urdf.yaml
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/jsk-ros-pkg/!svn/ver/3544/trunk/pr2eus/test/pr1012_urdf.yaml
+END
+pr2eus-test.launch
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/jsk-ros-pkg/!svn/ver/3142/trunk/pr2eus/test/pr2eus-test.launch
+END
+pr1012_sensors.bag
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/jsk-ros-pkg/!svn/ver/3544/trunk/pr2eus/test/pr1012_sensors.bag
+END
+pr2-ik-test.l
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/jsk-ros-pkg/!svn/ver/2420/trunk/pr2eus/test/pr2-ik-test.l
+END
+make-pr2-model-file-test.launch
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/jsk-ros-pkg/!svn/ver/3142/trunk/pr2eus/test/make-pr2-model-file-test.launch
+END
+make-pr2-model-file-test.l
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svnroot/jsk-ros-pkg/!svn/ver/3063/trunk/pr2eus/test/make-pr2-model-file-test.l
+END
+pr1012_camera_info.bag
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/jsk-ros-pkg/!svn/ver/3544/trunk/pr2eus/test/pr1012_camera_info.bag
+END
+pr2-read-state-test.l
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/jsk-ros-pkg/!svn/ver/3057/trunk/pr2eus/test/pr2-read-state-test.l
+END

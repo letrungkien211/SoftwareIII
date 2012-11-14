@@ -54,9 +54,9 @@
 		 j2 (instance rotational-joint :init :name 'j2
 			      :parent-link l2 :child-link l3 :axis :x :min -100 :max 100)
 		 j3 (instance rotational-joint :init :name 'j3
-			      :parent-link l3 :child-link l4 :axis :y :min -100 :max 100)
+			      :parent-link l3 :child-link l4 :axis :x :min -100 :max 100)
 		 j4 (instance rotational-joint :init :name 'j4
-			      :parent-link l4 :child-link l5 :axis :x :min -100 :max 100)
+			      :parent-link l4 :child-link l5 :axis :y :min -100 :max 100)
 		 j5 (instance rotational-joint :init :name 'j5
 			      :parent-link l5 :child-link l6 :axis :y :min -100 :max 100)
 		 )
@@ -68,5 +68,23 @@
 	   self))
   (:end-coords (&rest args) (forward-message-to end-coords args)))
 
+(if (not (boundp '*irtviewer*)) (make-irtviewer))
 (setq r (instance 6dof-robot :init))
-(objects (list r))
+(objects (list r (send r :end-coords)))
+(send r :link-list (send r :end-coords :parent))
+
+
+
+(dotimes (i 1)
+  (setq des (make-cascoords :pos (float-vector 100 100 100) :rpy (float-vector 0 pi 0)))
+  (send r :inverse-kinematics des
+	:link-list (send r :link-list (send r :end-coords :parent))
+	:move-target (send r :end-coords)
+	:translation-axis t
+	:rotation-axis t
+	:debug-view t
+	:revert-if-fail nil)
+  (x::window-main-one)
+  (send *irtviewer* :draw-objects)
+  (send des :draw-on :flush t)
+  )

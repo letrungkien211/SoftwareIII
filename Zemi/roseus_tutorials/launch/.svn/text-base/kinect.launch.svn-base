@@ -1,0 +1,31 @@
+<launch>
+  <include file="$(find openni_launch)/launch/openni.launch">
+    <!--arg name="camera" value="openni"/-->
+    <arg name="respawn" value="true"/>
+    <arg name="publish_tf" value="true"/>
+  </include>
+  <!-- add to launch openni_node2 for PS sensors, since node1 usually die -->
+  <!-- node pkg="openni_camera" type="openni_node" name="openni_node2" output="screen" respawn="true" / -->
+  <node name="openni_tracker" pkg="openni_tracker" type="openni_tracker" output="screen" respawn="true" >
+    <param name="camera_frame_id" value="camera_depth_frame"/>
+  </node>
+  <node name="openni_dispairty_view" pkg="image_view" type="disparity_view">
+    <remap from="image" to="/camera/depth/disparity" />
+  </node>
+  <node name="map_openni_camera" pkg="tf" type="static_transform_publisher"
+	args="0 0 1.5 0 0 0 /map /camera_link 100" />
+  <sphinxdoc><![CDATA[
+This scripts start kinect node,
+
+Checked with openni_kinect version 0.3.1, to get verrsion number, use `rosversion openni_kinect`
+
+.. code-block:: bash
+
+  rosrun roseus roseus `rospack find roseus_tutorials`/src/kinect-model-viewer.l "(test-kinect)"
+
+  (jsk internal user only) roseus "(jsk)" "(rbrain)" kinect-model-viewer.l "(hrp2jsk-simple)" "(test-kinect :robot *hrp2*)"
+
+to control hrp2 robot from kinect captured skelton image
+  ]]></sphinxdoc>
+</launch>
+
