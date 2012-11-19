@@ -1,6 +1,7 @@
 #!/usr/bin/env roseus
 
 ;; Include 
+;;
 (ros::roseus-add-msgs "image_view2")
 (ros::roseus-add-msgs "posedetection_msgs")
 
