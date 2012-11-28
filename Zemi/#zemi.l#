@@ -9,7 +9,7 @@
 	:link-list (send *pr2* :link-list
 			 (send *pr2* :larm :end-coords :parent)
 			 (send *pr2* :torso_lift_link))
-	:debug-view t)
+	:debug-view nnt)
   )
 
 (defun pr2-ri-angle-vector ()

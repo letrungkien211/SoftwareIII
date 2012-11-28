@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/jsk-ros-pkg/!svn/ver/3639/trunk/pr2eus_tutorials/euslisp
+END
+arm-navigation-sample.l
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svnroot/jsk-ros-pkg/!svn/ver/3621/trunk/pr2eus_tutorials/euslisp/arm-navigation-sample.l
+END
+template_grasp_samples.l
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svnroot/jsk-ros-pkg/!svn/ver/3639/trunk/pr2eus_tutorials/euslisp/template_grasp_samples.l
+END
+realtime_tabletop.l
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/jsk-ros-pkg/!svn/ver/3639/trunk/pr2eus_tutorials/euslisp/realtime_tabletop.l
+END
+pr2main.l
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/jsk-ros-pkg/!svn/ver/3627/trunk/pr2eus_tutorials/euslisp/pr2main.l
+END
+tabletop-sample.l
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/jsk-ros-pkg/!svn/ver/3637/trunk/pr2eus_tutorials/euslisp/tabletop-sample.l
+END
