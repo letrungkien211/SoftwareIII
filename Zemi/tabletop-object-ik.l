@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-;(load "zemi.l")
+					;(load "zemi.l")
 
 ;; Initialization
 (ros::roseus-add-msgs "image_view2")
@@ -16,11 +16,21 @@
 (setq *ri* (instance pr2-interface :init))
 (objects (list *pr2*))
 
-;(send *pr2* :reset-pose)
-;(send *pr2* :head :neck-p :joint-angle 40)
-;(send *ri* :angle-vector (send *pr2* :angle-vector) 10)
+(print "AFDFDFDF")
+					;(send *pr2* :reset-pose)
+;;(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+;;(send *pr2* :angle-vector #f(49.7471 27.6494 6.57449 85.9572 -63.1381 27.0968 -27.4865 89.9958 -60.0008 0.003072 -70.0002 -119.999 -19.9988 -29.9989 90.0004 -0.002237 41.334))
+(send *pr2* :reset-pose)
+(send *pr2* :arms :shoulder-p :joint-angle 0)
+(send *pr2* :head :neck-p :joint-angle 40)
+(send *pr2* :arms :wrist-r :joint-angle 90)
+(send *pr2* :torso :waist-z :joint-angle 100)
+(send *pr2* :larm :collar-y :joint-angle 90)
+(send *pr2* :rarm :collar-y :joint-angle -90)
+(send *ri* :angle-vector (send *pr2* :angle-vector) 10)
+(send *ri* :wait-interpolation)
 
-;(send *ri* :wait-interpolation)
+
 ;;;
 ;;; Client node defination
 (ros::roseus "tabletop_objectdetection_client")
@@ -59,85 +69,119 @@
 ;; Run (objectdetection-cb) whenever msgs comes
 (ros::subscribe "ObjectDetection" posedetection_msgs::ObjectDetection #'objectdetection-cb)
 
+;; (setq *flag* t)
+;; (setq *pos* nil)
+;; (defun pick (c)
+;;   (if *flag*
+;;       (send *ri* :stop-grasp :larm))
+;;   (send *pr2* :inverse-kinematics
+;; 	c
+;; 	:rotation-axis nil
+;; 	:move-target (send *pr2* :larm :end-coords)
+;; 	:link-list (send *pr2* :link-list
+;; 			 (send *pr2* :larm :end-coords :parent)
+;; 			 (send *pr2* :torso_lift_link))
+;; 	:debug-view t)
+;;   (send *pr2* :larm :wrist-r :joint-angle 90)
+;;   (print "fdfdfdfdf")
+;;   (send *ri* :angle-vector (send *pr2* :angle-vector) 10)
+;;   (send *ri* :wait-interpolation)
+;;   (send *ri* :start-grasp :larm)
+;;   (setf *flag* nil))
+
+;; (defun pick-place (c1 c2)
+;;   (if *flag1*
+;;       (send *ri* :stop-grasp :larm))
+;;   (send *ri* :move-end-coords-plan (send c1 :translate #f(0 0 15) :world)
+;; 	:move-arm :larm :use-torso t :send-trajectory nil)
+;;   (send *ri* :start-grasp :larm)
+;;   (send *ri* :move-end-coords-plan (send c2 :translate #f(0 0 15) :world)
+;; 	:move-arm :larm :use-torso t :send-trajectory nil)
+;;   (send *ri* :stop-grasp :larm)
+;;   (setf *flag1* nil))
+
+
+(defun pick-place1 (c1 c2)
+  (send *ri* :stop-grasp :larm)
+  (print "1")
+  (send *ri* :move-end-coords-plan c1
+	:move-arm :larm :use-torso t :send-trajectory nil)
+  (print "2")
+  (send *ri* :start-grasp :larm)
+
+  (send *ri* :stop-grasp :larm)
+  (print "3")
+  (send *ri* :move-end-coords-plan c2
+	:move-arm :larm :use-torso t :send-trajectory nil)
+  (print "4")
+  (send *ri* :start-grasp :larm)
+;;  (send *ri* :stop-grasp :larm)
+  (print "5"))
+
 
 (setq *flag* t)
-(setq *pos* nil)
-(defun pick (c)
-  (if *flag*
-      (send *ri* :stop-grasp :larm))
+(defun pick-place (c1 c2 &key (arm :larm))
+  (when *flag* 
+    (send *ri* :stop-grasp :larm)
+    (setf *flag* nil))
+  (print "1")
   (send *pr2* :inverse-kinematics
-	c
-	:rotation-axis nil
-	:move-target (send *pr2* :larm :end-coords)
+	c1
+;;	(send c1 :rotate (deg2rad 180) :z)
+	:rotation-axis :x
+	:move-target (send *pr2* arm :end-coords)
 	:link-list (send *pr2* :link-list
-			 (send *pr2* :larm :end-coords :parent)
+			 (send *pr2* arm :end-coords :parent)
 			 (send *pr2* :torso_lift_link))
 	:debug-view t)
-  (send *pr2* :larm :wrist-r :joint-angle 90)
-  (print "fdfdfdfdf")
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 10)
-  (send *ri* :wait-interpolation)
-  (send *ri* :start-grasp :larm)
-  (setf *flag* nil))
+  ;(send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+  ;(send *ri* :wait-interpolation)
+  ;(send *ri* :start-grasp arm)
 
-(setq *flag1* t)
-(setq *pos1* nil)
-(setq *pos2* nil)
+  (send *pr2* :inverse-kinematics
+	c2
+	;;(send c2 :rotate (deg2rad 180) :z)
+;;	(send c2 :rotate (deg2rad 90) :x)
+	:rotation-axis :x
+	:move-target (send *pr2* arm :end-coords)
+	:link-list (send *pr2* :link-list
+			 (send *pr2* arm :end-coords :parent)
+			 (send *pr2* :torso_lift_link))
+	:debug-view t)
+  ;(send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+  ;(send *ri* :wait-interpolation)
+  
+  ;(send *ri* :stop-grasp arm)
+  (print "5"))
 
-(defun pick-place (c1 c2)
-  (if *flag1*
-      (send *ri* :stop-grasp :larm))
-  (send *ri* :move-end-coords-plan (send c1 :translate #f(0 0 15) :world)
-	:move-arm :larm :use-torso t :send-trajectory nil)
-  (send *ri* :start-grasp :larm)
-  (send *ri* :move-end-coords-plan (send c2 :translate #f(0 0 15) :world)
-	:move-arm :larm :use-torso t :send-trajectory nil)
-  (send *ri* :stop-grasp :larm)
-  (setf *flag1* nil))
+
+
 
 ;; 
 ;; callback
-(ros::rate 10)
-;(while (ros::ok)
+(setq *flag* t)
 (defun test nil
   (setq c (tf-object-update))
   (ros::spin-once)
+  (print "1")
   (send *irtviewer* :draw-objects)
+  (print "2")
   (send-all c :draw-on :flush t)
-  
-  ;; (when (and *flag* c)
-  ;;   (setf *pos* (elt c 0)))
-
-  ;; (when *pos*
-  ;;     (pick *pos*)
-  ;;     (setf *pos* nil))
-
-  ;; (when (and *flag1* (= 2 (length c)))
-  ;;   (setf *pos1* (elt c 0))
-  ;;   (setf *pos2* (elt c 1)))
-
-  ;; (when *pos1*
-  ;;   (setq *pos1* (make-coords :pos (send (elt c 0) :pos)) )
-  ;;   (setq *pos2* (make-coords :pos (send (elt c 1) :pos)) )
-  ;;   (pick-place *pos1* *pos2*)
-  ;;   (setf *pos1* nil))
-
-  ;;(setq pos1 (make-coords :pos (send *pr2* :larm :end-coords :pos) ))
-  ;;(setq pos2 (make-coords :pos (send *pr2* :larm :end-coords :pos) ))
-  (setq pos1 (send *pr2* :larm :end-coords :copy-worldcoords))
-  (setq pos2 (send *pr2* :larm :end-coords :copy-worldcoords))
-  (send pos1 :translate #f(100 0 200) :world)
-  (send pos2 :translate #f(100 0 200) :world)
-  (send pos1 :translate #f(0 0 20) :world)
-  (send-all (list pos1 pos2) :draw-on :flush t)
-
-  (when (and *flag* (= (length c) 2))
-    (pick-place pos1 pos2)
+  (print "3")
+  (when (and *flag* (>= (length c) 3))
+    (sort c #'(lambda (x y) (> (elt (send x :pos ) 2) 
+			       (elt (send y :pos ) 2))))
+    (pick-place (elt c 1) (elt c 2))
     (setf *flag* nil))
-
-    
+  (print "4")
   (x::window-main-one)
   (ros::sleep)
   )
+;;
+;; 
+(ros::rate 10)
+;;(while (ros::ok)
+;;  (test))
+
 (test)
 
