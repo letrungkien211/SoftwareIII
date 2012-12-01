@@ -1,0 +1,5 @@
+all: sample1
+
+sample1: sample1.c
+	gcc -o sample1 sample1.c `pkg-config opencv --cflags` `pkg-config opencv --libs`
+

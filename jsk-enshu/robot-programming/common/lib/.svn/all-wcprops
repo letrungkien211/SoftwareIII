@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/jsk-enshu/!svn/ver/71/trunk/robot-programming/common/lib
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/jsk-enshu/!svn/ver/35/trunk/robot-programming/common/lib/Makefile
+END
+servo_test.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/common/lib/servo_test.c
+END
+servo_mt.c
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/common/lib/servo_mt.c
+END
+servo.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/common/lib/servo.c
+END
+wheels_kinematics.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/common/lib/wheels_kinematics.c
+END
+interpreter.c
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/common/lib/interpreter.c
+END
+sensor.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/common/lib/sensor.c
+END
+command.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/common/lib/command.c
+END
+socket_functions.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/common/lib/socket_functions.c
+END
+read_robot_state.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/common/lib/read_robot_state.c
+END
+servoparam.default
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/common/lib/servoparam.default
+END
+robot_state.c
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/common/lib/robot_state.c
+END
+psd.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/common/lib/psd.c
+END
+wheels.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/common/lib/wheels.c
+END
+multi_socket_functions.c
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/common/lib/multi_socket_functions.c
+END
+bumper.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/common/lib/bumper.c
+END

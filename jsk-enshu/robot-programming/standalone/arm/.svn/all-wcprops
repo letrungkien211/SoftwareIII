@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svnroot/jsk-enshu/!svn/ver/7/trunk/robot-programming/standalone/arm
+END
+arm_sample2.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/jsk-enshu/!svn/ver/7/trunk/robot-programming/standalone/arm/arm_sample2.c
+END
+arm_sample4.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/jsk-enshu/!svn/ver/7/trunk/robot-programming/standalone/arm/arm_sample4.c
+END
+arm_kinematics.c
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/standalone/arm/arm_kinematics.c
+END
+arm_kinematics.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/standalone/arm/arm_kinematics.h
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/standalone/arm/Makefile
+END
+servo_test.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/standalone/arm/servo_test.c
+END
+arm_sample1.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/jsk-enshu/!svn/ver/7/trunk/robot-programming/standalone/arm/arm_sample1.c
+END

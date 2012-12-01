@@ -1,0 +1,251 @@
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009
+END
+client-nomulti.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/client-nomulti.c
+END
+socketlib-nomulti.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/socketlib-nomulti.c
+END
+videocapture_mmap.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/videocapture_mmap.c
+END
+play.c
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/play.c
+END
+server.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/server.c
+END
+videocapture_full.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/videocapture_full.c
+END
+record.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/record.c
+END
+capture_threshold.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/capture_threshold.c
+END
+ifconfig-1.txt
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/ifconfig-1.txt
+END
+enshu-lec.sty
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/enshu-lec.sty
+END
+ifconfig-2.txt
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/ifconfig-2.txt
+END
+to-sjis.sh
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/to-sjis.sh
+END
+videocapture_read.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/videocapture_read.c
+END
+videocapture-gray.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/videocapture-gray.c
+END
+server-nomulti.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/server-nomulti.c
+END
+test1.c
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/test1.c
+END
+test2.c
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/test2.c
+END
+capture_client.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/capture_client.c
+END
+test3.c
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/test3.c
+END
+videocapture-bgr.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/videocapture-bgr.c
+END
+capture.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/capture.c
+END
+Makefile.camera1
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/Makefile.camera1
+END
+Makefile.camera2
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/Makefile.camera2
+END
+capture_laplacian.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/capture_laplacian.c
+END
+pprocess2.pbm
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/pprocess2.pbm
+END
+videocapture-binary.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/videocapture-binary.c
+END
+rprocess2.pbm
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/rprocess2.pbm
+END
+client.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/client.c
+END
+soundlib.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/soundlib.c
+END
+socketlib.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/socketlib.c
+END
+Makefile.sound
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/Makefile.sound
+END
+Makefile.socket
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/Makefile.socket
+END
+soundlib.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/soundlib.h
+END
+socketlib.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/socketlib.h
+END
+capture_server.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/capture_server.c
+END
+20090605-enshu-socket.tex
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/20090605-enshu-socket.tex
+END
+videocapture.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/videocapture.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/Makefile
+END
+videocapture.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/videocapture.h
+END
+20090604-enshu-device.tex
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/20090604-enshu-device.tex
+END
+capture_test.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2009/capture_test.c
+END

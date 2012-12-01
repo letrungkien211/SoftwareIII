@@ -1,0 +1,72 @@
+DAISYA_IP = 192.168.1.x
+
+DRIVER_DIR = ${TOP}/driver
+COMMON_LIB_DIR = ${TOP}/common/lib
+SH_OBJ_DIR = ${COMMON_LIB_DIR}/sh
+PC_OBJ_DIR = ${COMMON_LIB_DIR}/pc
+COMMON_INCLUDE_DIR = ${TOP}/common/include
+PC104_INCLUDE_DIR = ${DRIVER_DIR}/pc104driver
+
+MACHINE=$(shell uname -m)
+ifeq (${MACHINE}, sh4a)
+else
+endif
+PC_CC = gcc
+PC_CFLAGS = -Wall -O2 -fPIC
+
+OS = $(shell /bin/uname | sed s/-.*//)
+ifeq ($(OS), CYGWIN_NT)
+     CC = sh-linux-gcc
+     CFLAGS = -Wall -O2 -m4
+     OPENCV_INC = -I"c:/Program Files/OpenCV/cv/include" \
+	-I"c:/Program Files/OpenCV/cvaux/include" \
+	-I"c:/Program Files/OpenCV/cxcore/include" \
+	-I"c:/Program Files/OpenCV/otherlibs/highgui"
+     OPENCV_LIB  = -L"c:/Program Files/OpenCV/lib"
+else ifeq ($(MACHINE), sh4a)
+     CC = gcc
+     CFLAGS = -Wall -O2
+     OPENCV_INC = -I/usr/local/include/opencv
+     OPENCV_LIB = -L/usr/local/lib
+else
+     CC = sh4-linux-gcc
+     CFLAGS = -Wall -O2 -m4
+     OPENCV_INC = `pkg-config opencv --cflags`
+     OPENCV_LIB = `pkg-config opencv --libs`
+#for ROS-OpenCV 2.3
+#     OPENCV_INC = `pkg-config opencv-2.3.1 --cflags`
+#     OPENCV_LIB = `pkg-config opencv-2.3.1 --libs | sed 's@-l@@g'`
+endif
+
+#共通のOBJS
+DRIVER_OBJS = $(DRIVER_DIR)/pc104driver/pc104ctrl.o $(DRIVER_DIR)/pc104driver/pc104ctrl_mt.o
+SERVO_OBJS = $(SH_OBJ_DIR)/servo.o $(SH_OBJ_DIR)/servo_mt.o
+SENSOR_OBJS = $(SH_OBJ_DIR)/bumper.o $(SH_OBJ_DIR)/psd.o $(SH_OBJ_DIR)/sensor.o
+WHEEL_OBJS = $(SH_OBJ_DIR)/wheels.o 
+WHEEL_KINEMATICS_OBJS = $(SH_OBJ_DIR)/wheels_kinematics.o
+SOCKET_SH_OBJS = $(SH_OBJ_DIR)/socket_functions.o\
+                 $(SH_OBJ_DIR)/multi_socket_functions.o \
+	         $(SH_OBJ_DIR)/interpreter.o
+SOCKET_PC_OBJS = $(PC_OBJ_DIR)/socket_functions.o \
+                 $(PC_OBJ_DIR)/multi_socket_functions.o \
+	         $(PC_OBJ_DIR)/interpreter.o
+
+ROBOT_OBJS = $(SH_OBJ_DIR)/command.o $(SH_OBJ_DIR)/robot_state.o $(SH_OBJ_DIR)/read_robot_state.o
+ROBOT_PC_OBJS = $(PC_OBJ_DIR)/read_robot_state.o $(PC_OBJ_DIR)/robot_state.o \
+	      $(PC_OBJ_DIR)/command.o
+#共通のFILES
+DRIVER_FILES = $(DRIVER_DIR)/pc104driver/pc104ctrl.c $(DRIVER_DIR)/pc104driver/pc104ctrl_mt.c
+SERVO_FILES = $(COMMON_LIB_DIR)/servo.c $(COMMON_LIB_DIR)/servo_mt.c
+SENSOR_FILES = $(COMMON_LIB_DIR)/bumper.c $(COMMON_LIB_DIR)/psd.c $(COMMON_LIB_DIR)/sensor.c
+WHEEL_FILES = $(COMMON_LIB_DIR)/wheels.c 
+WHEEL_KINEMATICS_FILES = $(COMMON_LIB_DIR)/wheels_kinematics.c
+SOCKET_SH_FILES = $(COMMON_LIB_DIR)/socket_functions.c\
+                 $(COMMON_LIB_DIR)/multi_socket_functions.c \
+	         $(COMMON_LIB_DIR)/interpreter.c
+SOCKET_PC_FILES = $(COMMON_LIB_DIR)/socket_functions.c \
+                 $(COMMON_LIB_DIR)/multi_socket_functions.c \
+	         $(COMMON_LIB_DIR)/interpreter.c
+
+ROBOT_FILES = $(COMMON_LIB_DIR)/command.c $(COMMON_LIB_DIR)/robot_state.c $(COMMON_LIB_DIR)/read_robot_state.c
+ROBOT_PC_FILES = $(COMMON_LIB_DIR)/read_robot_state.c $(COMMON_LIB_DIR)/robot_state.c \
+	      $(COMMON_LIB_DIR)/command.c

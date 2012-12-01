@@ -1,0 +1,16 @@
+CC	= gcc
+CFLAGS	= -O2 -Wall
+
+.c.o:
+	${CC} -c ${CFLAGS} $<
+
+all: videocapture_mmap
+
+videocapture_mmap: videocapture.o videocapture_mmap.o
+	${CC} -o $@ $^
+
+videocapture.o: videocapture.c videocapture.h
+videocapture_mmap.o: videocapture_mmap.c videocapture.h
+
+clean:
+	rm videocapture_mmap *.o *~

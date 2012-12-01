@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/standalone/sensors
+END
+view_sensors.c
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/standalone/sensors/view_sensors.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/standalone/sensors/Makefile
+END

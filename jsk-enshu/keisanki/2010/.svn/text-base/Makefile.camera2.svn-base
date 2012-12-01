@@ -1,0 +1,27 @@
+CC	= gcc
+CFLAGS	= -O2 `pkg-config opencv --cflags`
+LIBS	= `pkg-config opencv --libs`
+
+.c.o:
+	${CC} -c ${CFLAGS} $<
+
+all: capture capture_edge capture_threshold capture_facedetect detect_faces
+
+capture: capture.o
+	${CC} -o $@ $^ $(LIBS)
+
+capture_edge: capture_edge.o
+	${CC} -o $@ $^ $(LIBS)
+
+capture_threshold: capture_threshold.o
+	${CC} -o $@ $^ $(LIBS)
+
+capture_facedetect: capture_facedetect.o
+	${CC} -o $@ $^ $(LIBS)
+
+detect_faces: detect_faces.o
+	${CC} -o $@ $^ $(LIBS)
+
+clean:
+	rm capture cpature_edge capture_threshold *.o
+

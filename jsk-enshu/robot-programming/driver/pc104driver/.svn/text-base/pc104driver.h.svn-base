@@ -1,0 +1,115 @@
+#ifndef PC104DRIVER_H_INCLUDED_
+#define PC104DRIVER_H_INCLUDED_
+
+typedef struct{
+  unsigned char devno;
+  unsigned char cwccw;
+  unsigned char brk;
+  unsigned char pwm;
+}  dcmctl;
+
+typedef struct {
+  unsigned char devno;
+  unsigned char pwm;
+} servoctl;
+
+/* typedef struct{ */
+/*   u8 devno; */
+/*   u8 cwccw; */
+/*   u8 brk; */
+/*   u8 pwm; */
+/* }  dcmctl; */
+
+/* typedef struct { */
+/*   u8 devno; */
+/*   u8 pwm; */
+/* } servoctl; */
+
+#define PC104_MAGIC 'k'
+#define PC104_READ ( _IOWR ( PC104_MAGIC, 1, int ) )
+#define PC104_READ_AD ( _IOWR( PC104_MAGIC, 2, int ) )
+#define PC104_READ_PSD ( _IOWR( PC104_MAGIC, 3, int ) )
+#define PC104_READ_BMP ( _IOWR( PC104_MAGIC, 4, int ) )
+#define PC104_READ_MOTORCURRENT ( _IOWR( PC104_MAGIC, 5, int ) )
+#define PC104_READ_ENC ( _IOWR( PC104_MAGIC, 6, int ) )
+#define PC104_READ_DIPSWITCH ( _IOR( PC104_MAGIC, 7, int ) )
+#define PC104_WRITE_LED ( _IOW( PC104_MAGIC, 8, int ) )
+#define PC104_WRITE_DCMOTOR ( _IOW( PC104_MAGIC, 9, dcmctl ) )
+#define PC104_WRITE_SERVO ( _IOW( PC104_MAGIC, 10, servoctl ) )
+
+#define PC104_MAJOR 11
+#define PC104_MINOR 0
+#define PC104_VERSION "1.1"
+
+#define PC104_SERVO_NUM 5
+
+#define PC104_BASE 0xb8000000
+#define PC104_EXTENT 0x100000
+
+#define PC104_AD_OFFSET 0x80100
+
+#define PC104_PSD0_OFFSET0 0x80100
+#define PC104_PSD0_OFFSET1 0x80101
+
+#define PC104_PSD1_OFFSET0 0x80110
+#define PC104_PSD1_OFFSET1 0x80111
+
+#define PC104_PSD2_OFFSET0 0x801b0
+#define PC104_PSD2_OFFSET1 0x801b1
+
+#define PC104_BMP0_OFFSET0 0x80120
+#define PC104_BMP0_OFFSET1 0x80121
+
+#define PC104_BMP1_OFFSET0 0x80130
+#define PC104_BMP1_OFFSET1 0x80131
+
+#define PC104_BMP2_OFFSET0 0x80140
+#define PC104_BMP2_OFFSET1 0x80141
+
+#define PC104_BMP3_OFFSET0 0x80180
+#define PC104_BMP3_OFFSET1 0x80181
+
+#define PC104_BMP4_OFFSET0 0x80190
+#define PC104_BMP4_OFFSET1 0x80191
+
+#define PC104_BMP5_OFFSET0 0x801a0
+#define PC104_BMP5_OFFSET1 0x801a1
+
+#define PC104_MOTORCURRENT0_OFFSET0 0x80150
+#define PC104_MOTORCURRENT0_OFFSET1 0x80151
+
+#define PC104_MOTORCURRENT1_OFFSET0 0x80160
+#define PC104_MOTORCURRENT1_OFFSET1 0x80161
+
+#define PC104_MOTORCURRENT2_OFFSET0 0x80170
+#define PC104_MOTORCURRENT2_OFFSET1 0x80171
+
+#define PC104_ENC0_OFFSET0 0x80010
+#define PC104_ENC0_OFFSET1 0x80011
+#define PC104_ENC0_OFFSET2 0x80012
+
+#define PC104_ENC1_OFFSET0 0x80020
+#define PC104_ENC1_OFFSET1 0x80021
+#define PC104_ENC1_OFFSET2 0x80022
+
+#define PC104_ENC2_OFFSET0 0x80030
+#define PC104_ENC2_OFFSET1 0x80031
+#define PC104_ENC2_OFFSET2 0x80032
+
+#define PC104_DIPSWITCH_OFFSET 0x80000
+#define PC104_PUSHBUTTON_OFFSET 0x80001
+
+#define PC104_LED_OFFSET 0x80000
+
+#define PC104_DCMOTOR0CTL_OFFSET 0x80002
+#define PC104_DCMOTOR0PWM_OFFSET 0x80003
+
+#define PC104_DCMOTOR1CTL_OFFSET 0x80004
+#define PC104_DCMOTOR1PWM_OFFSET 0x80005
+
+#define PC104_DCMOTOR2CTL_OFFSET 0x80006
+#define PC104_DCMOTOR2PWM_OFFSET 0x80007
+
+#define PC104_SERVO_OFFSET 0x80010
+
+#endif

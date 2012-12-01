@@ -1,0 +1,118 @@
+\documentclass[a4j,twoside]{jarticle}
+
+\usepackage[dvipdfm]{graphicx}
+\usepackage{array, amsmath, amssymb, ascmac, supertabular, moreverb, multicol}
+\usepackage[dvipdfm]{hyperref}
+%% \usepackage[dvipdfm]{xcolor}
+% \hypersetup{urlbordercolor={1 1 1}}
+% \hypersetup{bookmarksnumbered=true}
+% \hypersetup{linkcolor={0 0 0}}
+% \hypersetup{linkbordercolor={white white white}}
+% \hypersetup{colorlinks=false}
+\pagestyle{headings}
+
+%講義・演習配布資料用設定集
+\usepackage{enshu-lec}
+
+\title{2010年度 機械情報夏学期\\計算機演習　スレッド，ソケット，GUI，
+  デバイス統合プログラミング
+}
+
+\author{
+担当：岡田 慧(k-okada@jsk.t.u-tokyo.ac.jp)\\
+\url{http://www.jsk.t.u-tokyo.ac.jp/~k-okada/lecture/enshu-20100714.tgz}\\
+}
+
+\date{2010年7月14日/7月15日}
+\setlength{\columnseprule}{0.5pt}
+\setlength{\columnwidth}{.3\textwidth}
+\setlength{\columnsep}{1cm}
+
+\begin{document}
+\maketitle
+
+%\section{はじめに}
+
+本日の演習では，これまで学んできた
+4 回の内容(マルチスレッド，ネットワーク通信，GUI，画像
+処理，デバイス操作)を活用したアプリケーションの作成を行う．
+
+\begin{excersize}{課題}
+ これまで習ったマルチプロセス，マルチスレッド，ネットワーク通信，GUI，
+ 画像処理，デバイス操作を活用したアプリケーションの作成を行いレポートを作成せよ（締切り7/30日）
+    レポートには，作成したアプリケーションのセールスポイント，工夫した
+    点，苦労した点等の他に以下の項目に付いて記せ
+ \begin{enumerate}
+\item アプリケーションの実行中のキャプチャ画面を一枚以上含めよ．画面の
+  キャプチャは左下にあるAltキーを押しながら右上のPrtScキーを押すと，一番手前
+  にある画面がキャプチャされ，保存できる．自分の作ったアプリケーションのすごさや工夫した点がもっともよく分かる画像を工夫して選ぶこと．
+\item アプリケーションのシステム図（例えばGUIアプリケーション資料の図５のようなもの）をつけよ．その際，線，枠は何種類のものがあり，それぞれ何を表しているかを説明した凡例を付けよ．
+ \end{enumerate}
+レポートはk-okada-enshu@jsk.t.u-tokyo.ac.jpまで．
+\end{excersize}
+
+\newpage
+\section*{ヒント}
+
+これまでの資料は\newline
+\url{http://www.cyber.t.u-tokyo.ac.jp/~tani/class/mech\_enshu/}\newline
+\url{http://www.isi.imi.i.u-tokyo.ac.jp/enshu/keisanki/chat/index.html}\newline
+にあるので参考にしてほしい．
+
+また，スレッド，ネットワーク通信，GUI，カメラキャプチャを組み合
+わせたビデオチャットのサンプルプログラムが
+\url{http://www.jsk.t.u-tokyo.ac.jp/~k-okada/lecture/enshu-20100714.tgz}
+にある．
+
+使い方は一つのターミナルで
+\begin{commandline}
+ \begin{verbatim}
+$ video_chat_server
+ \end{verbatim}
+\end{commandline}
+としてサーバを立ち上げ，もう一つのターミナルで
+\begin{commandline}
+ \begin{verbatim}
+$ video_chat_clinet 127.0.0.1
+ \end{verbatim}
+\end{commandline}
+としてクライアントを立ち上げることで，ビデオの片方向のチャットが
+可能になる．
+
+また，カメラがない環境で実験したい場合は，
+\begin{commandline}
+ \begin{verbatim}
+$ video_server
+ \end{verbatim}
+\end{commandline}
+とすると，output.aviというファイルにキャプチャされた画像が
+動画として保存することができ，
+
+\begin{commandline}
+ \begin{verbatim}
+$ video_chat_server output.avi
+ \end{verbatim}
+\end{commandline}
+とすると，この動画をカメラ入力の代替として使ったサーバが立ち上がる．
+
+\newpage
+\section*{ソースコード}
+
+{\scriptsize
+\listinginput[1]{1}{enshu-20100714/Makefile}
+}
+
+{\scriptsize
+\listinginput[1]{1}{enshu-20100714/video_chat_server.c.jis}
+}
+
+{\scriptsize
+\listinginput[1]{1}{enshu-20100714/video_chat_client.c.jis}
+}
+
+{\scriptsize
+\listinginput[1]{1}{enshu-20100714/video_saver.c.jis}
+}
+
+\end{document}
+

@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/joystick
+END
+joy-lnx.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/joystick/joy-lnx.cpp
+END
+joy-main.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/joystick/joy-main.cpp
+END
+joydirect.l
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/joystick/joydirect.l
+END
+joy.h
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/joystick/joy.h
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/joystick/Makefile
+END

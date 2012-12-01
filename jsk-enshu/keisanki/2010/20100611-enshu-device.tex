@@ -1,0 +1,1356 @@
+\documentclass[a4j,twoside]{jarticle}
+
+\usepackage[dvipdfm]{graphicx}
+\usepackage{array, amsmath, amssymb, ascmac, supertabular, moreverb, multicol}
+\usepackage[dvipdfm]{hyperref}
+%% \usepackage[dvipdfm]{xcolor}
+% \hypersetup{urlbordercolor={1 1 1}}
+% \hypersetup{bookmarksnumbered=true}
+% \hypersetup{linkcolor={0 0 0}}
+% \hypersetup{linkbordercolor={white white white}}
+% \hypersetup{colorlinks=false}
+\pagestyle{headings}
+
+%講義・演習配布資料用設定集
+\usepackage{enshu-lec}
+
+\title{2010年度 機械情報夏学期\\計算機演習　デバイスプログラミング
+}
+
+\author{
+担当：岡田 慧(k-okada@jsk.t.u-tokyo.ac.jp)\\
+\url{http://www.jsk.t.u-tokyo.ac.jp/~k-okada/lecture/enshu-20100611.tgz}\\
+}
+
+\date{2010年6月11日/7月9日}
+\setlength{\columnseprule}{0.5pt}
+\setlength{\columnwidth}{.3\textwidth}
+\setlength{\columnsep}{1cm}
+
+\begin{document}
+\maketitle
+
+\section{はじめに}
+
+本日の演習では，カメラデバイスデバイスのコントロール
+を通じて，ソフトウェアシステムからハードウェアを制御と入出
+力するための概念と方法を学習する．
+
+まずは必要なソフトのダウンロードをしてほしい．作業するディレクトリにいっ
+て
+
+\begin{commandline}
+ \begin{verbatim}
+% wget http://www.jsk.t.u-tokyo.ac.jp/~k-okada/lecture/enshu-20100611.tgz
+ \end{verbatim}
+\end{commandline}
+解答は以下のように行う．
+\begin{commandline}
+ \begin{verbatim}
+% tar xvzf enshu-20100611.tgz
+ \end{verbatim}
+\end{commandline}
+
+今回の演習で，理解してほしいのはカメラデバイスの制御と入出力は，
+ファイルの読み書きと同様の制御と入出力が可能であるということであり，
+ソフトウェアシステムの観点からみると，
+カメラはファイルとして仮想化されていることで，
+対象がカメラであるかファイルであるかに関わらず
+同じファイルの入出力関数が利用できる．
+
+また，カメラでえられた画像の処理を行うための
+オープンソフトウェアであるOpenCVの利用方法を学ぶ．
+
+\section{デバイスドライバ・デバイスファイル}
+\subsection{デバイスドライバ}
+
+コンピュータには様々なハードウェアが接続されており，接続されているハー
+ドウェアをデバイスと呼ぶ．デバイスの例としては，キーボード，マウス，プ
+リンタ，ネットワークカード，CDドライブ，USB等がある．
+%
+各デバイスへの物理的なアクセス方法(デバイスを制御するLSI等への信号操作
+など)はデバイス毎に異なるが，コンピュータのプログラムからはそれらの物
+理的な操作を隠蔽し，デバイスを抽象化する(hardware abstraction)ことで，
+統一的に扱うことができるようにしている．
+%
+デバイスを抽象化するためのシステムプログラムを，{\gt デバイスドライバ}
+と呼ぶ(デバドラ，ドライバなどとも呼ばれる)．デバイスドライバはOSに組み
+込まれているが，OSに組み込まれていない新しいデバイスを接続する場合はデ
+バイスドライバをインストールする必要がある(WindowsでもLinuxでも)．
+
+Linuxのデバイスドライバは，OSに最初から組み込まれているものと，
+OS実行中に組み込んだり外したりできるものがある．後者は，
+\verb+/sbin/lsmod+によって現在組み込まれているドライバのリストを見るこ
+とができる．
+\begin{commandline}
+ \begin{verbatim}
+% /sbin/lsmod
+ \end{verbatim}
+\end{commandline}
+以下は実行結果で，OS実行中に組み込まれたデバイスドライバのリストである
+(実際にはOS起動直後に自動的に組み込まれている)．
+\begin{commandline}
+\scriptsize
+ \begin{verbatim}
+Module                  Size  Used by
+uvcvideo               48772  0 
+compat_ioctl32          5376  1 uvcvideo
+videodev               30464  1 uvcvideo
+v4l1_compat            16388  2 uvcvideo,videodev
+v4l2_common            20608  2 uvcvideo,videodev
+iptable_filter          6912  0 
+ip_tables              16324  1 iptable_filter
+ip6table_filter         6784  0 
+ip6_tables             17476  1 ip6table_filter
+x_tables               18308  2 ip_tables,ip6_tables
+af_packet              29064  2 
+ipv6                  268280  16 
+... (略) ...
+soundcore              11460  1 snd
+snd_page_alloc         14472  2 snd_hda_intel,snd_pcm
+sg                     37036  0 
+ehci_hcd               35340  0 
+sd_mod                 31232  3 
+uhci_hcd               27024  0 
+usbcore               124268  4 uvcvideo,ehci_hcd,uhci_hcd
+... (略) ...
+ \end{verbatim}
+\end{commandline}
+例えば，{\small\verb+soundcore+}はサウンドデバイスの
+{\small\verb+e1000+}はネットワークカードの，
+{\small\verb+uvcvideo+}はカメラのデバイスドライバである．
+
+\subsection{デバイスファイル}
+デバイスファイルは，UNIXシステムで様々なデバイスへのアクセス方法を統一
+的にするための概念である．
+
+以下のコマンドを実行してみよう．
+\begin{commandline}
+ \begin{verbatim}
+% ls -l /dev
+ \end{verbatim}
+\end{commandline}
+すると，以下のように\verb|/dev|ディレクトリの下にあるデバイスファイルの一覧が表示される．
+\begin{commandline}
+\scriptsize
+ \begin{verbatim}
+合計 4
+drwxr-xr-x  12 root root      6920 2009-05-30 21:56 .
+drwxr-xr-x  21 root root      4096 2009-05-30 01:05 ..
+drwxr-xr-x   6 root root       140 2009-05-30 21:56 .udev
+crw-------   1 root video  10, 175 2009-05-30 01:05 agpgart
+crw-rw----+  1 root audio  14,   4 2009-05-29 16:07 audio
+prw-------   1 root root         0 2009-05-29 16:07 blog
+prw-------   1 root root         0 2009-05-29 16:07 bootsplash
+drwxr-xr-x   3 root root        60 2009-05-30 01:03 bus
+lrwxrwxrwx   1 root root         3 2009-05-30 01:05 cdrom -> sr0
+crw-------   1 root root    5,   1 2007-09-22 06:50 console
+lrwxrwxrwx   1 root root        11 2009-05-30 01:05 core -> /proc/kcore
+drwxr-xr-x   2 root root        60 2009-05-29 16:06 cpu
+crw-rw----   1 root root   10,  63 2009-05-30 01:05 device-mapper
+drwxr-xr-x   6 root root       120 2009-05-30 01:03 disk
+crw-rw----+  1 root audio  14,   3 2009-05-29 16:07 dsp
+lrwxrwxrwx   1 root root         3 2009-05-30 01:05 dvd -> sr0
+crw-rw----   1 root video  29,   0 2009-05-30 01:03 fb0
+lrwxrwxrwx   1 root root        13 2009-05-30 01:05 fd -> /proc/self/fd
+crw--w--w-   1 root root    1,   7 2009-05-30 01:03 full
+crw-rw----   1 root root   10, 200 2007-09-22 06:50 fwmonitor
+crw-rw----   1 root root   10, 228 2009-05-30 01:03 hpet
+                 :
+                 :
+ \end{verbatim}
+\end{commandline}
+ここで，行頭の文字がb もしくはc となっているのが，デバイスファイルであ
+る．デバイスファイルは形式的には\verb|/dev|ディレクトリの下にある通常
+のファイルのように表されるが，これらのファイルは，そのデバイスに割り当
+てられたデバイス番号などのほんのわずかな情報しか持っていない，実体のな
+いファイルである．しかし，これらのファイルに対して，\verb|read()|や
+\verb|write()|などのシステムコールを通じて入出力の要求がなされると，カー
+ネル内に組み込まれたそれぞれのデバイス専用のデバイスドライバが呼び出さ
+れ，必要な処理が行われるようになっている．この仕組みによって，ユーザは
+それぞれのハードウェアの構造を意識することなく，あたかも一般のファイル
+を扱うのと同じようにデバイスをコントロールすることができるのである．
+
+
+\begin{excersize}{課題1}
+ \begin{enumerate}
+  \item それぞれの利用しているコンピュータに現在インストールされているデ
+	バイスドライバの数，並びに，デバイスファイルの数を数えよ．
+    　　\\(ヒント：\verb#/sbin/lsmod | wc #とするとlsmodの出力の行数，ワード数，文
+	字数を表示する))
+ \end{enumerate}
+\end{excersize}
+
+
+\section{カメラデバイス}
+
+カメラのデバイスファ
+イルは，\verb|/dev/video|である．このファイ
+ルにデータを書いたり読んだりすることで，カメラとのデータの送受
+信が行える．
+
+カメラデバイスの制御はVideo for Linuxと呼ばれるAPIの仕様に基づいて行う．
+この仕様の詳細は
+\url{http://www.linuxtv.org/downloads/video4linux/API/V4L2_API/spec-single/v4l2.html}
+にあり，今回利用するソースコードもこのサンプルプログラムである．
+
+まずシステムコール\verb|open()|でカメラデバイスファイルを開き，次に
+\verb|ioctl()|でパラメータの設定を行う．
+最後に\verb|close()|でデバイスファイルを閉じて処理を終了する．
+
+以下で各システムコールの詳細を述べる．
+
+\subsubsection*{デバイスのオープン　open()}
+\begin{examplecode}
+ \begin{verbatim}
+#include <fcntl.h>
+
+int open(char *path, int oflag);
+
+path           : パス名
+oflag          : ファイルステータスフラグ
+ \end{verbatim}
+\end{examplecode}
+\verb|open()|システムコールは，第1引数のパス名\verb|path|で指定された
+デバイスを，第2引数のファイルステータスフラグ\verb|oflag|の値に従って
+オープンする．ファイルステータスフラグ\verb|oflag|には
+\tablename\ref{table:oflag}に示すフラグを論理和で複数個組み合わせるこ
+とができる．
+
+\begin{table}[hbt]
+ \begin{center}
+  \caption{\label{table:oflag}ファイルステータスフラグ}
+  \begin{tabular}{ll}
+   \Hline
+   フラグ & ファイルの処理形態\\
+   \hline
+   O\_RDONLY & 読み出しのみ行う\\
+   O\_WRONLY & 書き込みのみ行う \\ 
+   O\_RDWR & 読み取り／書き込みの両方を行う\\
+   O\_NDELAY   & オープンのブロックをするかしないかを設定する \\
+   O\_APPEND & 追加書き込みを行う．ファイルポインタをファイルの最後に設定する \\
+   O\_SYNC & ファイルデータとファイルステータスが更新されるまで書き込まない \\
+   O\_CREAT   & ファイルが存在しない場合に作成する \\
+   O\_TRUNC & ファイルが存在する場合にその大きさを0にする \\   
+   O\_EXCL & O\_CREATがセットされている場合， そのファイルが存在していればエラーを返す\\
+   \Hline
+  \end{tabular}
+ \end{center}
+\end{table}
+デバイスのオープンに成功すると，返り値としてファイルディスクリプタが得
+られる．ファイルディスクリプタとはオープンしたファイルに割り当てられた
+固有の番号のことで，以後デバイスへの入出力はこのファイルディスクリプタ
+を通して行われる．何らかの理由でデバイスのオープンに失敗した場合は，返
+り値として$-1$が返される．
+
+\subsubsection*{デバイスの設定　ioctl()}
+\begin{examplecode}
+ \begin{verbatim}
+#include <sys/ioctl.h>
+
+int ioctl(ind fd, int request, char *arg);
+
+fd               : ファイルディスクリプタ
+request          : 処理要求
+arg              : 属性情報
+ \end{verbatim}
+\end{examplecode}
+\verb|ioctl()|システムコールは，第1引数にデバイスのファイルディスクリプタ\verb|fd|を指定し，このデバイスに対して第2引数の処理要求\verb|request|にしたがって，第3引数\verb|arg|で参照する属性情報をデバイスに設定する．
+デバイスの設定に失敗すると$-1$を返す．
+第2引数\verb|request|に与えられる処理要求はデバイスによって異なる．
+カメラの場合のパラメータについては後述する．
+
+第3引数\verb|arg|の属性情報の構造はデバイスの種類と処理要求によって変
+化する．例えば，ここで用いるサウンドデバイスの属性情報は\verb|int|型へのポ
+インタであるが，次章で扱うシリアル通信の属性情報は通信時の種々の情報を
+格納した構造体のポインタとして与えなければならない．
+
+\subsubsection*{デバイスのクローズ　close()}
+\begin{examplecode}
+ \begin{verbatim}
+#include <fcntl.h>
+
+int close(int fd);
+
+fd             : ファイルディスクリプタ
+ \end{verbatim}
+\end{examplecode}
+\verb|close()|システムコールは，\verb|open()|システムコールの返り値で
+得られたファイルディスクリプタ\verb|fd|を指定して呼び出すことで，この
+指定されたデバイスをクローズする．何らかの理由でクローズに失敗した場合
+には$-1$を返す．
+
+\subsection{カメラデバイスの設定}
+
+カメラデバイスの設定はシステムコール\verb|ioctl()|を用いて行う．
+カメラデバイスの設定に用いられる\verb|ioctl|の第2引数(処理要求)を\tablename\ref{table:camera_request}に示す．
+\begin{table}[ht]
+ \begin{center}
+  \caption{\label{table:camera_request}カメラデバイスに与えられる処理要求}
+  \begin{tabular}{ll}
+   \Hline
+   処理要求 & 要求する処理内容 \\
+   \hline
+   VIDIOC\_STREAMON & 入力ストリーム開始 \\
+   VIDIOC\_STREAMOFF & 入力ストリーム停止 \\
+   VIDIOC\_REQBUFS & 画像データバッファの要求 \\
+   VIDIOC\_DQBUFS & １フレーム分の画像バッファを取り出す \\
+   VIDIOC\_DQBUFS & １フレーム分の画像バッファをキューに入れる \\
+   VIDIOC\_QUERYBUFS & 画像バッファ情報の問い合わせ\\
+   VIDIOC\_QUERYCAP & デバイスの能力の問い合わせ\\
+   VIDIOC\_S\_FMT & 画像フォーマットを設定する\\
+   \Hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\subsection{mmapによる入出力}
+
+カメラのデバイスからのデータの読み書きはread/writeも利用できるが，ここで
+はmmap関数を利用する．
+
+\begin{examplecode}
+ \begin{verbatim}
+#include <sys/mman.h>
+
+void *mmap(void *start, size_t length, int prot, int flags,
+           int fd, off_t offset);
+
+int munmap(void *start, size_t length);
+start         : マップするメモリの先頭アドレス
+length        : ファイルをメモリにマップする範囲
+port          : メモリ保護の方法，実行可能，読み込み可能，書き込み可能等
+flags         : マップ時のオプション,
+fd            : ファイルディスクリプタ
+offset        : マップするファイルの先頭アドレスのfdからのオフセット
+ \end{verbatim}
+\end{examplecode}
+
+mmap() 関数は、ファイル記述子 (file descriptor) fd で指定されたファイル
+(もしくはその他のオブジェクト) の、オフセット offset から length バイト
+の範囲をメモリにマップする (張り付ける) 。このとき、なるべくメモリ上の
+start アドレスから始めるようにマップする。実際には、このアドレスは関数に
+対してのヒントでしかなく、通常は 0 を指定する。実際にオブジェクトがマッ
+プされたアドレスは mmap() の返り値となり、決して 0 にはなることはない。 
+
+flagsとしては以下のようなオプションを利用できる．
+\begin{itemize}{
+\item{MAP\_FIXED}{}
+指定されたアドレス以外のアドレスにマッピングを行なわない。 start と len
+     で指定されたメモリ領域が既存のマッピングのページと重なる場合、既存
+     のマッピングの重なった部分は捨てられる。もし指定されたアドレスが使
+     用できない場合、 mmap() は失敗する。 MAP\_FIXED を指定した場合は
+     start はページサイズの倍数でなくてはいけない。このオプションは使用
+     しない方が良い。 }
+\item{MAP\_SHARED}{
+このマッピングを、このオブジェクトをマップした他の全てのプロセスと共有す
+     る。この領域への保存は、ファイルへの書き込みと等価である。ただしファ
+     イルが実際に更新されるのは、 msync(2) または munmap(2) が呼ばれたと
+     きである。 }
+\item{MAP\_PRIVATE}{プライベートな copy-on-write (書き込み時コピー) マッ
+     プを生成する。この領域への書き込みは、オリジナルのファイルに影響し
+     ない。 mmap() の呼び出し後にオリジナルのファイルに対して行われた変
+     更が、マップ領域に反映されるかどうかは規定されていない。 }
+\end{itemize}
+MAP\_SHARED と MAP\_PRIVATE は、必ずどちらかひとつを指定しなければならない。 
+
+
+mmap関数を用いることでデータをデバイスからメインメモリにコピーする必要が
+なく，実際はデバイス上に存在するデータを，あたかもメインメモリにあるよう
+にアクセスすることが出来る．
+
+なお，今回演習で利用するカメラはread/writeに対応していない．
+
+\subsection{サンプルプログラムのコンパイル}
+
+以下のようにしてサンプルプログラムのコンパイルが可能である．
+
+\begin{commandline}
+ \begin{verbatim}
+% cd enshu-20100611/camera1
+% make
+ \end{verbatim}
+\end{commandline}
+
+ここで以下のようにして{\tt videocapture\_mmap} を実行する．
+
+\begin{commandline}
+ \begin{verbatim}
+% ./videocapture_mmap
+ \end{verbatim}
+\end{commandline}
+
+こうすると {\tt test.ppm}というファイルが作られる．
+
+\begin{commandline}
+ \begin{verbatim}
+% gnome-open test.ppm
+ \end{verbatim}
+\end{commandline}
+
+としてカメラの画像がキャプチャされたことを確認せよ．
+
+\begin{excersize}{課題2}
+ \begin{enumerate}
+  \item {\tt videocapture\_mmap}を実行しようとするとエラーがでるる．それを修正し動くようにせよ．\newline
+        (ヒント：\verb#Cannot open '/dev/video': 2, No such file or directory#と出る者は \verb#videocapture.c#のmain関数で定義してあ
+	るデバイスファイルの名前を書き換えよ．デバイスファイルは
+	\verb#dmesg#，\verb#ls -al /dev/video*#などで調べよ．
+       \verb#Cannot open '/dev/video': 13, Permission denied#と出る者は
+	TAを呼べ．)
+ \end{enumerate}
+\end{excersize}
+
+\subsection{画像ファイルフォーマット}
+
+このサンプルプログラムは{\tt test.ppm}という画像ファイルが作られた．
+この画像ファイルは Portable Pixel Map 形式と呼ばれる，もっとも単純な
+ファイルフォーマットである．
+
+ファイルフォーマットは
+ \begin{verbatim}
+<<ファイル形式識別記号>>\n
+<<x方向のピクセル数>> <<y方向のピクセル数>>\n
+<<最大輝度>>\n
+<<画像データ(RGB順，左から右，上から下へ走査した順)>>
+ \end{verbatim}
+となっており，ファイル形式の識別には以下の種類がある．
+ascii形式とraw形式は画像データをascii文字列として書き込むか
+rawデータとして書き込むかの違いである．
+\begin{table}[ht]
+ \begin{center}
+  \caption{\label{table:camera_request}カメラデバイスに与えられる処理要求}
+  \begin{tabular}{ll}
+   \Hline
+   \Hline
+   ファイル形式識別記号 & 識別子 \\
+   \hline
+P1 & 2値 ascii形式 PBM形式  \\
+P2 & グレースケール ascii形式 PGM形式  \\
+P3 & フルカラー ascii形式 PPM形式  \\
+P4 & 2値 raw形式 PBM形式  \\
+P5 & グレースケール raw形式 PGM形式  \\
+P6 & フルカラー raw形式 PPM形式 \\
+   \Hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\subsection{コンピュータ上での画像の取り扱い}
+
+
+コンピュータ上での画像の取り扱いは，
+画像を微小長方形領域（ピクセル＝画素という）に分割し，そのピクセ
+ル単位で処理を行う．
+通常のカメラ映像の場合は，例えば720 ＊ 480 や640 ＊ 480 
+のピクセルの集合となっている．
+
+グレー画像の場合，各画素には通常0 から255 の8bit のデジタルデータが入力
+される．通常は0 で黒，全ビットが1 で白となる．カラー画像の場合は，各画素
+には3 つの値がデジタルデータとして入力される．ふつう，RGB 表色系と呼ばれ
+る標準的なもので表されており，光の三原色の赤緑青のRGB がそれぞれ8bit の
+値をとる．RGB の三原色をコンピュータのメモリにどのように格納するかにはさ
+まざまな方法があるが，多くの場合，始めのバイトが左上角のB，次が左上角のG，
+その次が左上角のR で，さらにその次が一つ右隣のB，それから一つ右隣のG，一
+つ右隣のR というように入っている．この場合3 バイトごとに1 画素ずつが相当
+することになる．
+これと異なる場合として，例えばYUYV画像がありこれは次節で説明する．
+
+\begin{figure}[ht]
+\begin{minipage}{\linewidth}
+\begin{center}
+\includegraphics[width=.45\linewidth]{fig/why-is-vision-hard.jpg}
+\includegraphics[width=.45\linewidth]{fig/what-is-an-edge.jpg}
+\caption{
+\label{fig:grec}
+コンピュータ上での画像の取り扱い
+(\url{http://opencv.willowgarage.com/wiki/OpenCV_Talks}より)
+}
+\end{center}
+\end{minipage}
+\end{figure}
+
+
+\subsection{RGB画像とYUYV画像について}
+
+このカメラで取得できる画像のフォーマットはYUYV画像である．これは，
+各画素に対してRGBのそれぞれ1バイトづつ合計3バイトの情報が割り振られてい
+るのではなく，2画素に対して，明るさ情報2バイト，色情報2バイトが割り振ら
+れている．すなわち1画素に対する情報量は2バイトである．
+これは，明るさの変化に敏感だが，色の変化には鈍感である人の目の特性を
+利用し，色に比べて明るさ大してより多い情報を割り振っており，
+少ない損失で効率よくデータを伝送，保存することを目的としている．
+
+これを図示すると，YUYV画像フォーマットでは，4x4の画像をあらわすのに
+\begin{table}[ht]
+ \begin{center}
+  \begin{tabular}{|l|l|l|l|}
+\hline
+Y U & Y V & Y U & Y V \\ \hline
+Y U & Y V & Y U & Y V \\ \hline
+Y U & Y V & Y U & Y V \\ \hline
+Y U & Y V & Y U & Y V \\ \hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+のようなデータ配置となっている．
+また，Yの値の上限と下限は0と255であるが，
+U/Vに関しては-128から127となっている．
+
+ここから以下の変換式を用いてRGB画像を作り出している．
+
+ \begin{verbatim}
+R = 1.00000Y + 1.40200V
+G = 1.00000Y - 0.71414V - 0.34414U
+B = 1.00000Y + 1.77200U
+ \end{verbatim}
+
+
+\begin{excersize}{課題3 (TAチェック)}
+ \begin{enumerate}
+  \item videocapture.cのwrite\_ppm()を改造し，RGBのRとBをひっくり返した
+	画像を出力してみよ．
+  \item videocapture.cのwrite\_ppm()を改造し，グレー画像が出力されるよう
+	にしてみよ．
+  \item グレー画像としたとき各画素の値が128より小さければであれば0を，
+	128以上であれば255を表示するようにしてみよ．
+  % \item videocapture.cのmainの最初で，プログラム実行時の引数に応じて変数
+  % 	をセットしているところがある．これを利用して，プログラムの出力ファ
+  % 	イル名を変えられるようにせよ．{\tt man 3 getopt\_long}として情報を得ることが出来る．
+ \end{enumerate}
+\end{excersize}
+
+\newpage
+\section{OpenCVを使った画像処理プログラム}
+
+\subsection{OpenCVを使ったエッジ抽出，二値化処理}
+
+OpenCVという画像処理ライブラリを利用することで画像の取得や画像処理が容易になる．
+
+\begin{commandline}
+ \begin{verbatim}
+% cd enshu-20100611/camera2
+% make
+% ./capture
+ \end{verbatim}
+\end{commandline}
+
+各種情報は
+\url{http://opencv.jp/}
+を見るとよい．
+\url{http://opencv.jp/sample/}
+サンプルプログラムが数多く載っている．
+先ほどの課題は
+\url{http://opencv.jp/sample/filter_and_color_conversion.html#threshold}
+を参考にすると，cpature.cの(3)の部分を以下のように変更することで書くこと
+が出来る．
+
+ \begin{verbatim}
+    // (3)カメラから画像をキャプチャする
+    {
+      IplImage *src_img_gray, *dst_img_gray;
+      
+      // (a) 画像処用の画像データを確保
+      frame = cvQueryFrame (capture);
+      frame = cvQueryFrame (capture);
+      frame = cvQueryFrame (capture);
+      src_img_gray = cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);
+      dst_img_gray = cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);
+
+      while (1) {
+          frame = cvQueryFrame (capture);
+
+          // (b)グレイ画像を作成
+          cvCvtColor(frame, src_img_gray, CV_BGR2GRAY);
+          
+          // (c)二値画像化
+          cvThreshold(src_img_gray, dst_img_gray, 90, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+
+          // (d)結果を表示する
+          cvShowImage ("Capture", dst_img_gray);
+
+          c = cvWaitKey (10);
+          if (c == '\x1b')
+            break;
+      }
+    }
+ \end{verbatim}
+      
+また，エッジ処理は以下のようになる．
+
+ \begin{verbatim}
+    { // (3)カメラから画像をキャプチャする
+      IplImage *src_img_gray, *tmp_img_gray, *dst_img_gray;
+      
+      
+      frame = cvQueryFrame (capture); // (a) 画像処用の画像データを確保
+      frame = cvQueryFrame (capture);
+      frame = cvQueryFrame (capture);
+      tmp_img_gray = cvCreateImage(cvGetSize(frame), IPL_DEPTH_16S, 1);
+      src_img_gray = cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);
+      dst_img_gray = cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);
+
+      while (1) {
+          frame = cvQueryFrame (capture);
+          cvCvtColor(frame, src_img_gray, CV_BGR2GRAY);   // (b)グレイ画像を作成
+          if ( 0 ) {
+            cvCanny (src_img_gray, dst_img_gray, 50.0, 200.0, 3);
+          }else{                                           // (c)Edge処理
+            cvLaplace (src_img_gray, tmp_img_gray, 5);
+            cvConvertScaleAbs(tmp_img_gray, dst_img_gray, 1, 0);
+          }
+          cvShowImage ("Capture", dst_img_gray);           // (d)結果を表示する
+          c = cvWaitKey (10);
+          if (c == '\x1b')
+            break;
+      }
+    }
+
+ \end{verbatim}
+
+\subsection{顔抽出プログラム}
+
+http://opencv.jp/sample/object\_detection.html\#face\_detectionに紹介さ
+れているOpenCVに組み込まれている物体検出プログラムを用いた顔の検出プログラ
+ムのサンプルを示す．
+
+makeとしてコンパイルすることが出きるが，
+
+ \begin{verbatim}
+gcc -o detect_faces detect_faces.c -O2 `pkg-config opencv --cflags` `pkg-config opencv --libs`
+    `はSHIFT+@キーで表示されるバッククオートであることに注意
+ \end{verbatim}
+
+のようにコマンドラインから指定してもよい．
+
+ \begin{verbatim}
+./detect_faces lenna.png
+ \end{verbatim}
+とすると顔画像抽出結果がえられるはずである．
+エラーが出る場合はdetect\_faces.cの中で利用されている
+\verb+haarcascade_frontalface_default.xml+ファイルが見つかっていない
+場合である．
+
+ \begin{verbatim}
+% locate haarcascade_frontalface_default.xml
+ \end{verbatim}
+としてファイルのありかを調べ，これをプログラムの中で指定するか，あるい
+は，カレントディレクトリにコピーするとよい．
+
+ \begin{verbatim}
+#include <cv.h>
+#include <highgui.h>
+
+int main(int argc, char **argv)
+{
+    int i;
+    IplImage *src_img = 0, *src_gray = 0;
+    const char *cascade_name = "haarcascade_frontalface_default.xml";
+    CvHaarClassifierCascade *cascade = 0;
+    CvMemStorage *storage = 0;
+    CvSeq *faces;
+    static CvScalar colors[] = {
+        {{0, 0, 255}}, {{0, 128, 255}},
+        {{0, 255, 255}}, {{0, 255, 0}},
+        {{255, 128, 0}}, {{255, 255, 0}},
+        {{255, 0, 0}}, {{255, 0, 255}}
+    };
+
+    // (1)画像を読み込む
+    if (argc < 2
+        || (src_img = cvLoadImage(argv[1], CV_LOAD_IMAGE_COLOR)) == 0)
+        return -1;
+    src_gray = cvCreateImage(cvGetSize(src_img), IPL_DEPTH_8U, 1);
+
+    // (2)ブーストされた分類器のカスケードを読み込む
+    cascade = (CvHaarClassifierCascade *) cvLoad(cascade_name, 0, 0, 0);
+
+    // (3)メモリを確保し，読み込んだ画像のグレースケール化，ヒストグラムの均一化を行う
+    storage = cvCreateMemStorage(0);
+    cvClearMemStorage(storage);
+    cvCvtColor(src_img, src_gray, CV_BGR2GRAY);
+    cvEqualizeHist(src_gray, src_gray);
+
+    // (4)物体（顔）検出
+    faces =
+        cvHaarDetectObjects(src_gray, cascade, storage, 1.11, 4, 0,
+                            cvSize(40, 40));
+
+    // (5)検出された全ての顔位置に，円を描画する
+    for (i = 0; i < (faces ? faces->total : 0); i++) {
+        CvRect *r = (CvRect *) cvGetSeqElem(faces, i);
+        CvPoint center;
+        int radius;
+        center.x = cvRound(r->x + r->width * 0.5);
+        center.y = cvRound(r->y + r->height * 0.5);
+        radius = cvRound((r->width + r->height) * 0.25);
+        cvCircle(src_img, center, radius, colors[i % 8], 3, 8, 0);
+    }
+
+    // (6)画像を表示，キーが押されたときに終了
+    cvNamedWindow("Face Detection", CV_WINDOW_AUTOSIZE);
+    cvShowImage("Face Detection", src_img);
+    cvWaitKey(0);
+
+    cvDestroyWindow("Face Detection");
+    cvReleaseImage(&src_img);
+    cvReleaseImage(&src_gray);
+    cvReleaseMemStorage(&storage);
+
+    return 0;
+}
+
+ \end{verbatim}
+
+\begin{excersize}{課題4（TAチェック）}
+ \begin{enumerate}
+  \item ２値化，エッジ抽出を行うプログラムcapture\_threshold.c
+	capture\_edge.cは未完成である．TODOの部分を埋めて完成させよ．
+  \item カメラ入力画像の顔抽出を行うプログラムcapture\_facedetect.cを
+	capture.dとdetect\_faces.cを参考に作成せよ．
+ \end{enumerate}
+\end{excersize}
+
+\begin{excersize}{アドバンスド課題1}
+ \begin{enumerate}
+  \item http://opencv.jp/sample/index.html 等を参考にいろいろな画像処理
+        プログラムを作ってみよ．課題で紹介したものの他に
+	オプティカルフロー，特徴点抽出，ハフ変換，テンプレートマッチング
+        などがある．これらを組み合わせてみるのもよい．
+ \end{enumerate}
+\end{excersize}
+
+\begin{excersize}{アドバンスド課題2}
+ \begin{enumerate}
+  \item videocapture.cのmainの最初で，プログラム実行時の引数に応じて変数
+  	をセットしているところがある．これを利用して，プログラムの出力ファ
+  	イル名を変えられるようにせよ．{\tt man 3 getopt\_long}として情報を得ることが出来る．
+ \end{enumerate}
+\end{excersize}
+
+\section{参考資料・参考情報}
+
+\subsection{man コマンド}
+
+プログラミング演習の際に必要になる能力の一つが，分からないことを調べる能力である．
+特にC言語の関数の意味が分からない場合には，\verb|man| コマンドが有効である．
+例えば，{\tt read} と {\tt fread}の違いは何なのか？ということが知りたければ，
+\begin{commandline}
+ \begin{verbatim}
+% man 2 read
+% man 3 fread
+ \end{verbatim}
+\end{commandline}
+などとすると良い．関数の使い方の詳細が表示されるので，参考にすると良い．
+もし自分のマシンにmanが見つからなければ，mech-unixにログインすれば，参
+照可能である．
+\verb|man|の第一引数の数字はセクションと呼ばれるもので，同じスペルで
+違う意味のコマンドが存在する場合に区別するために使われる．例えば{\tt read}
+は複数のセクションに存在するので，システムコールとしての {\tt read} の
+解説を読みたい場合にはセクション2を指定する．セクションの一覧を以下に
+示す．
+
+\begin{table}[hbt]
+ \begin{center}
+  \caption{\label{table:man_section}man コマンドのセクション一覧}
+  \begin{tabular}{|c|l|l|}\hline
+セクション &     説明    &     メモ \\ \hline
+          1 &    ユーザコマンド   &      シェルから実行可能なコマンドなど\\
+          2 &    システムコール   &      カーネルの提供する機能\\
+          3 &    ライブラリコール &      システムライブラリに含まれる機能\\
+          4 &    特別ファイル     &      たいていは /dev 内にあるもの\\
+          5 &    ファイルの書式   &      例えば /etc/passwd の書式\\
+          6 &    ゲーム           &      その他様々なプログラム\\
+          7 &    マクロパッケージ &      man マクロのようなもの\\
+          8 &    システム管理     &      実行するのに root 権限が必要なもの\\
+          9 &    カーネルルーチン &      非標準的コールや内部仕様\\
+    \hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+以下のコマンドも試してみるとよい．
+\begin{commandline}
+ \begin{verbatim}
+% man man
+% whatis read
+ \end{verbatim}
+\end{commandline}
+
+
+
+\newpage
+
+\topmargin=-5mm
+\textheight=240mm
+
+\appendix
+\newpage
+\section{カメラデバイス ソースコード}
+
+\subsection{Makefile}
+
+\begin{multicols}{2}
+{\scriptsize
+\listinginput[1]{1}{enshu-20100611/camera1/Makefile.jis}
+}
+\end{multicols}
+
+\subsection{videocapture.c}
+
+\begin{multicols}{2}
+{\scriptsize
+\listinginput[1]{1}{enshu-20100611/camera1/videocapture.c.jis}
+}
+\end{multicols}
+
+\newpage
+
+\subsection{videocapture.h}
+
+\begin{multicols}{2}
+{\scriptsize
+\listinginput[1]{1}{enshu-20100611/camera1/videocapture.h.jis}
+}
+\end{multicols}
+
+\subsection{videocapture\_mmap.c}
+
+\begin{multicols}{2}
+{\scriptsize
+\listinginput[1]{1}{enshu-20100611/camera1/videocapture_mmap.c.jis}
+}
+\end{multicols}
+
+% \subsection{videocapture\_read.c}
+
+% \begin{multicols}{2}
+% {\scriptsize
+% \listinginput[1]{1}{enshu-20100611/camera1/videocapture_read.c.jis}
+% }
+% \end{multicols}
+
+\newpage
+\section{OpenCVを使った画像処理プログラムソースコード}
+
+\subsection{Makefile}
+
+\begin{multicols}{2}
+{\scriptsize
+\listinginput[1]{1}{enshu-20100611/camera2/Makefile.jis}
+}
+\end{multicols}
+
+\subsection{capture.c}
+
+{\scriptsize
+\listinginput[1]{1}{enshu-20100611/camera2/capture.c.jis}
+}
+
+
+\end{document}
+
+
+\section{シリアル通信}
+シリアルポートとは入出力デバイスの1つである．ほとんどのPCにはシリアル
+ポートが1つもしくは2つ装備されている．各ポートは9ピン(25ピンのこともあ
+る)のコネクタを持っており，送信ピンからデータの送信が，受信ピンからデー
+タの受信が行える．他のピンはフロー制御と接地のために用いられる．このシ
+リアルポートを介した通信をシリアル通信と呼ぶ．
+ここではシリアル通信を行うプログラムを作成し，コンピュータ間通信プログ
+ラミングの基礎を学ぶ．
+
+シリアルポートのデバイスファイルは\verb|/dev/ttyS0|である．このファイ
+ルにデータを書いたり読んだりすることで，シリアルポートとのデータの送受
+信が行える．あとは，サウンドデバイスと同様に，各種の設定をしてやればよい．
+このように，サウンドデバイスとシリアルポートという一見全く違うもののように
+見えるデバイスも，デバイスファイルを用いることで，その違いを意識するこ
+となく扱うことができるのである．
+
+\subsection{送受信処理の流れ}
+シリアル通信の送受信処理の大まかな流れは\figurename\ref{fig:nprocess}のようになる．
+\begin{figure}[ht]
+\begin{minipage}{1.1\hsize}
+\begin{center}
+\includegraphics[width=\linewidth]{fig/nprocess2.eps}
+\caption{
+\label{fig:nprocess}
+送受信処理の流れ
+}
+\end{center}
+\end{minipage}
+\end{figure}
+
+送信側，受信側ともに，まずシステムコール\verb|open()|でシリアルポート
+を開き，次に\verb|ioctl()|で通信速度などのパラメータの設定を行う．送信
+側が\verb|write()|でシリアルポートにデータを書き込むとデータが送信され，
+受信側が\verb|read()|でシリアルポートからデータを読み出すとデータが受
+信される．最後に双方とも\verb|close()|でシリアルポートを閉じて送受信処
+理を終了する．
+
+
+\subsubsection*{シリアルポートの設定}
+シリアルポートの設定も，サウンドデバイス同様システムコール\verb|ioctl()|を用いて行う．
+シリアルポートの設定に用いられる\verb|ioctl|の第2引数(処理要求)を\tablename\ref{table:serial_request}に示す．
+\begin{table}[H]
+ \begin{center}
+  \caption{\label{table:serial_request}シリアルポートに与えられる処理要求}
+  \begin{tabular}{ll}
+   \Hline
+   処理要求 & 要求する処理内容 \\
+   \hline
+   TCGETA & 現在の設定を取り出して第3引数に格納する．\\
+   TCSETA & 第3引数に格納されている設定をセットする．\\
+   TCSETAW & 新しい設定をセットする前に，出力が無くなるのを待つ．\\
+   TCSETAF & TCSETAWに加えて，入力待ち行列をフラッシュする．\\
+   \Hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+また，第3引数(属性情報)の構造体を以下に示す．
+\begin{examplecode}
+ \begin{verbatim}
+#define NCC 8
+
+struct termio{
+    unsigned short int c_iflag;
+    unsigned short int c_oflag;
+    unsigned short int c_cflag;
+    unsigned short int c_lflag;
+    unsigned char c_line;
+    unsigned char c_cc[NCC];
+};
+            
+c_iflag           : 入力フラグ
+c_oflag           : 出力フラグ
+c_cflag           : 制御フラグ
+c_lflag           : 行制御フラグ
+c_line            : 行制御
+c_cc              : 制御文字
+ \end{verbatim}
+\end{examplecode}
+
+
+\subsection{サンプルプログラムの概要}
+
+まずは，簡単な例題プログラムを使って，シリアル通信プログラミングにおけ
+るデータの送受信処理について見てみよう．
+サンプルプログラムは，sample2.c がサーバー側のプログラム，sample3.c がクライアント側の
+プログラムとなっている．まず一方がserver を実行し，ついで他方がclient を実行する．
+client から文字列が送信され，server が受信すると，その文字列を表示するような内容になっている．
+
+
+
+
+\subsection{サンプルプログラムのコンパイル}
+
+sample2.c，sample3.c のコンパイルを行って，実行ファイルを作成する．以下のコマンド
+を実行すると，sample2，sample3 のコンパイルが行われる．
+\begin{commandline}
+ \begin{verbatim}
+% cd ../serial
+% make
+ \end{verbatim}
+\end{commandline}
+しかし，まだプログラムは未完成の状態なので，このままの状態ではエラーが出てコンパイルすることはできない．
+
+\begin{excersize}{3}
+ \begin{enumerate}
+  \item sample2.c，sample3.c が正しくコンパイルされるように /* TODO */ と
+書かれている部分に適切な語句を当てはめてプログラムを完成させ，コンパイルせよ．\\
+ \end{enumerate}
+\end{excersize}
+
+\subsubsection*{サンプルプログラムの実行}
+
+ここからは2人1組のペアワークとなる．隣の人同士でペアを作ること．1人だ
+け余ってしまった場合には席を移動してペアを見つけること．
+どうしても一人余る場合には3人のグループを作ること．
+
+配布されたシリアルケーブルを使って２台のコンピュータのシリアルポートを接続する．
+ケーブルは，配布するクロスケーブルを必ず用いること．普通に用いられている
+ストレートケーブルでは通信ができないので注意が必要である．
+
+\begin{excersize}{4}
+ \begin{enumerate}
+  \item sample2.c，sample3.c をコンパイルし，実行せよ．\\
+  \item Client プログラムからユーザの入力を受け付け，任意の文字列を送
+  信できるようにせよ．(ヒント: キーボードからの入力は\verb|fgets()|を
+  用いる．)
+ \end{enumerate}
+\end{excersize}
+
+
+%% \subsection{シグナルによるプロセス制御}
+
+%% \begin{excersize}{6}
+%%  \begin{enumerate}
+%%   \item ソフトウェア第二の講義で学ぶsignalを用いて，sample4.c を実行している間，3秒間に5回 Ctrl-C を押した時にのみ
+%% プログラムが終了するように変更せよ．\\
+%%   （ヒント）Ctrl-C が押されるたびに回数をカウントする関数と，3秒ごとに定期的に呼ばれる関数でその回数をクリアすれば良い
+%%  \end{enumerate}
+%% \end{excersize}
+
+%% なお，プロセスを強制的に終了させたいが，Ctrl-c が効かなくなってしまっ
+%% た場合には，実行したプロセスのIDを調べ，そのプロセスIDに対して「プロセ
+%% ス終了のシグナル」（9）を送る．例えば，sample4 というプロセスを終了さ
+%% せたい場合には以下のような操作を行う．
+%% \begin{commandline}
+%%  \begin{verbatim}
+%% % ps
+%%  PID TTY          TIME CMD
+%%  6527 pts/1    00:00:00 tcsh
+%%  6659 pts/1    00:00:00 ps
+%%  6664 pts/1    00:00:00 ./sample4
+
+%% % kill -9 6664
+%%  \end{verbatim}
+%% \end{commandline}
+%% 上記の例の6664とはプロセスIDのことである．
+
+
+
+
+
+\section{サウンドデバイス}
+
+ここでは，Linuxでサウンドカードを制御するドライバを用いてサウンドデバイスを制御するプログラ
+ムを作成し，デバイスへの入出力方法を学ぶと共に，サウンド情報処理プログラミ
+ングの基礎を学ぶ．
+
+\subsection{サウンドデバイスの動作確認}
+
+まずはサウンドデバイスの動作確認を行おう．
+
+\begin{commandline}
+ \begin{verbatim}
+% gnome-sound-recorder &
+ \end{verbatim}
+\end{commandline}
+と入力してサウンド録音調節ソフト\verb+gnome-sound-recorder+
+(\figurename\ref{fig:grec})を起動する．
+
+ここ以下のように作業する
+\begin{enumerate}
+\item [ファイル]-[音量調整ツール]を開く．
+\item [編集]-[設定]でInVolにチェックする．これで録音中のタブが出現する．
+　　　このときスライドバーは一番上まで持っていき音量を最大限にする．
+　　　また，マイクボタンにバツ印があれば押して，ミュートを解除する．
+\end{enumerate}
+
+この準備ができたら録音ボタンを押し，ノートＰＣに向かって何か話し，
+停止ボタンを押し，ファイルを保存する録音できる．
+次に，演奏ボタンをおして
+録音したサウンドが生成されるか確認しよう．
+
+\begin{figure}[ht]
+\begin{minipage}{\linewidth}
+\begin{center}
+\includegraphics[width=.9\linewidth]{fig/grec.jpg}
+\caption{
+\label{fig:grec}
+サウンド録音ソフト（gnome-sound-recorder）の実行画面
+}
+\end{center}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[ht]
+\begin{minipage}{\linewidth}
+\begin{center}
+\includegraphics[width=.9\linewidth]{fig/grec-how-to.jpg}
+\caption{
+\label{fig:grec-how-to}
+サウンド録音ソフト（gnome-sound-recorder）の設定手順
+}
+\end{center}
+\end{minipage}
+\end{figure}
+
+\subsection{簡単なサウンドデバイスの使い方\label{subsec:sec:cat-audio-raw}
+}
+
+サウンド用のデバイスファイルはは\verb|/dev/audio|(又は\verb|/dev/dsp|)である．
+このデバイスファイルへの読み書きで録音と再生ができる．
+試しに以下のコマンドを実行してみよう．
+\begin{commandline}
+ \begin{verbatim}
+% cat /dev/audio > test.raw
+ \end{verbatim}
+\end{commandline}
+これで，録音をした結果をファイル\verb|another.raw|に記録することになる．
+録音を終了する時にはCtrl-C（コントロールキーを押しながらCを押すこと）
+を入力すれば良い．
+また逆に
+\begin{commandline}
+ \begin{verbatim}
+% cat test.raw > /dev/audio
+ \end{verbatim}
+\end{commandline}
+とすると，先ほど録音したサウンドを再生できる．
+また，\verb|test.raw|のところには，ファイルであれば何でも代用可能である．
+なにか好きなファイル名を入れてやると，スピーカーからノイズが聞こえて
+くるはずである．
+
+\subsection{演習用ソース等一式のダウンロード}
+今回の計算機演習のWebページ
+http://www.isi.imi.i.u-tokyo.ac.jp/lectures/pukiwiki/keisanki
+から計算機演習のリンクをたどり，
+\verb|enshu-20090604.tgz|をダウンロードし，以下のコマンドを実行する．
+\begin{commandline}
+ \begin{verbatim}
+% tar xvzf enshu-20090604.tgz
+% cd enshu-20090604/sound
+ \end{verbatim}
+\end{commandline}
+これにより，今回の演習の材料一式が展開され，
+サウンドデバイスのサンプルのあるディレクトリに移動する．
+
+%% kikaib
+%% sum2009-keisanki
+
+\subsection{サンプルプログラムのコンパイル\label{subsec:sec:play-record}
+}
+まずは，簡単な例題プログラムを使って，サウンド情報処理プログラミングにおけ
+るサウンドの再生処理について見てみよう．最初にサンプルの
+\verb|play.c|のコンパイルを行って，実行ファイルを作成する．
+\begin{commandline}
+ \begin{verbatim}
+% make
+ \end{verbatim}
+\end{commandline}
+
+作成されたファイルを以下のようにして実行し，サウンドを録音する．
+このプログラムは自動的にtest.rawという名前のサウンドファイルを出力する．
+
+\begin{commandline}
+ \begin{verbatim}
+% ./record
+ \end{verbatim}
+\end{commandline}
+
+次に以下のようにプログラムを実行し，先ほど録音したサウンドが再生されれば
+成功である．playプログラムはtest.rawというサウンドファイルをスピーカから
+出力するプログラムである．
+
+\begin{commandline}
+ \begin{verbatim}
+% ./play 
+ \end{verbatim}
+\end{commandline}
+
+
+ここで注意するべきことは，{\tt play} と打ち込むのではなく，{\tt
+./play} とするべきである．{\tt play}とすると，パス（環境変数PATH）の探
+索順によって，コンパイルしたバイナリファイルではなく，標準でインストー
+ルされている{\tt /usr/bin/play} コマンド等が起動してしまう事もあるから
+である．「{\tt ./}」を付けることで，実行するファイルを明示的に指定でき
+る．
+
+
+
+\subsection{再生処理の流れ}
+再生処理の大まかな流れは\figurename\ref{fig:pprocess}のようになる．
+\begin{figure}[th]
+\begin{minipage}{\linewidth}
+\begin{center}
+\includegraphics[width=.75\linewidth]{fig/pprocess2.eps}
+\caption{
+\label{fig:pprocess}
+再生処理の流れ
+}
+\end{center}
+\end{minipage}
+\end{figure}
+
+まずシステムコール\verb|open()|でサウンドデバイスファイルを開き，次に
+\verb|ioctl()|でサンプリングレートなどのパラメータの設定を行う．
+\verb|write()|でサウンドデバイスにサウンドデータを書き込むと，サウンドが再生される．
+最後に\verb|close()|でデバイスファイルを閉じて処理を終了する．
+
+以下で各システムコールの詳細を述べる．
+
+\subsubsection*{デバイスのオープン　open()}
+\begin{examplecode}
+ \begin{verbatim}
+#include <fcntl.h>
+
+int open(char *path, int oflag);
+
+path           : パス名
+oflag          : ファイルステータスフラグ
+ \end{verbatim}
+\end{examplecode}
+\verb|open()|システムコールは，第1引数のパス名\verb|path|で指定された
+デバイスを，第2引数のファイルステータスフラグ\verb|oflag|の値に従って
+オープンする．ファイルステータスフラグ\verb|oflag|には
+\tablename\ref{table:oflag}に示すフラグを論理和で複数個組み合わせるこ
+とができる．
+
+\begin{table}[hbt]
+ \begin{center}
+  \caption{\label{table:oflag}ファイルステータスフラグ}
+  \begin{tabular}{ll}
+   \Hline
+   フラグ & ファイルの処理形態\\
+   \hline
+   O\_RDONLY & 読み出しのみ行う\\
+   O\_WRONLY & 書き込みのみ行う \\ 
+   O\_RDWR & 読み取り／書き込みの両方を行う\\
+   O\_NDELAY   & オープンのブロックをするかしないかを設定する \\
+   O\_APPEND & 追加書き込みを行う．ファイルポインタをファイルの最後に設定する \\
+   O\_SYNC & ファイルデータとファイルステータスが更新されるまで書き込まない \\
+   O\_CREAT   & ファイルが存在しない場合に作成する \\
+   O\_TRUNC & ファイルが存在する場合にその大きさを0にする \\   
+   O\_EXCL & O\_CREATがセットされている場合， そのファイルが存在していればエラーを返す\\
+   \Hline
+  \end{tabular}
+ \end{center}
+\end{table}
+デバイスのオープンに成功すると，返り値としてファイルディスクリプタが得
+られる．ファイルディスクリプタとはオープンしたファイルに割り当てられた
+固有の番号のことで，以後デバイスへの入出力はこのファイルディスクリプタ
+を通して行われる．何らかの理由でデバイスのオープンに失敗した場合は，返
+り値として$-1$が返される．
+
+\subsubsection*{デバイスの設定　ioctl()}
+\begin{examplecode}
+ \begin{verbatim}
+#include <sys/ioctl.h>
+
+int ioctl(ind fd, int request, char *arg);
+
+fd               : ファイルディスクリプタ
+request          : 処理要求
+arg              : 属性情報
+ \end{verbatim}
+\end{examplecode}
+\verb|ioctl()|システムコールは，第1引数にデバイスのファイルディスクリプタ\verb|fd|を指定し，このデバイスに対して第2引数の処理要求\verb|request|にしたがって，第3引数\verb|arg|で参照する属性情報をデバイスに設定する．
+デバイスの設定に失敗すると$-1$を返す．
+第2引数\verb|request|に与えられる処理要求はデバイスによって異なり，PCM
+(Pulse Code Modulation)音源については\tablename\ref{table:request}のよ
+うな要求がよく用いられる．これらの処理要求の文字列は，
+\verb+#include <linux/soundcard.h>+とすることで使用可能になる．
+\begin{table}[hbt]
+ \begin{center}
+  \caption{\label{table:request}PCMに与えられる処理要求}
+  \begin{tabular}{ll}
+   \Hline
+   処理要求 & 要求する処理内容 \\
+   \hline
+   SOUND\_PCM\_WRITE\_SETFMT  & フォーマット(8/16bit，符号
+   有り無し，エンディアン)を指定する．\\
+   SOUND\_PCM\_WRITE\_CHANNELS & チャンネル数(ステレオ: 2，モノラル: 1)を指定する．\\
+   SOUND\_PCM\_WRITE\_RATE & サンプリングレートを指定する．\\
+   \Hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+第3引数\verb|arg|の属性情報の構造はデバイスの種類と処理要求によって変
+化する．例えば，ここで用いるサウンドデバイスの属性情報は\verb|int|型へのポ
+インタであるが，次章で扱うシリアル通信の属性情報は通信時の種々の情報を
+格納した構造体のポインタとして与えなければならない．
+
+
+\subsubsection*{デバイスへのデータの書き込み　write()}
+\begin{examplecode}
+ \begin{verbatim}
+#include <fcntl.h>
+
+int write(int fd, char *buf, size_t nbyte);
+
+fd            : ファイルディスクリプタ
+buf           : 出力バッファ
+nbyte         : 書き込みバイト数
+ \end{verbatim}
+\end{examplecode}
+\verb|write()|システムコールは，第1引数に\verb|open()|システムコールの
+返り値で得られたファイルディスクリプタ\verb|fd|を指定し，この指定され
+たデバイスに第2引数で指定する出力バッファから，第3引数で指定するバイト
+数分だけデータを書き込む．書き込みに成功すると実際に書き込まれたバイト
+数を返し，失敗した場合には$-1$を返す．
+
+\subsubsection*{デバイスのクローズ　close()}
+\begin{examplecode}
+ \begin{verbatim}
+#include <fcntl.h>
+
+int close(int fd);
+
+fd             : ファイルディスクリプタ
+ \end{verbatim}
+\end{examplecode}
+\verb|close()|システムコールは，\verb|open()|システムコールの返り値で
+得られたファイルディスクリプタ\verb|fd|を指定して呼び出すことで，この
+指定されたデバイスをクローズする．何らかの理由でクローズに失敗した場合
+には$-1$を返す．
+
+\begin{excersize}{課題1}
+ \begin{enumerate}
+  \item play.c をコンパイルして実行せよ．
+  \item play.c を書き換えて，他のサウンドファイル(＜自分の名前＞.raw)を
+	再生せよ．\newline＜自分の名前＞.rawは
+	\subsecref{sec:play-record}で使った./recordプログラムで録音し，
+	生成されたtest.rawというサウンドファイルを
+	\% mv test.rw ＜自分の名前＞.raw　として作成しよう．
+  \item サンプリングレートを変更して早送り，スロー再生が出来るようにして
+	みよ．
+ \end{enumerate}
+\end{excersize}
+
+\subsection{録音処理の流れ}
+録音処理の大まかな流れは\figurename\ref{fig:rprocess}のようになる．
+\begin{figure}[ht]
+\begin{minipage}{\linewidth}
+\begin{center}
+\includegraphics[width=.75\linewidth]{fig/rprocess2.eps}
+\caption{
+\label{fig:rprocess}
+録音処理の流れ
+}
+\end{center}
+\end{minipage}
+\end{figure}
+
+まずシステムコール\verb|open()|でサウンドデバイスファイルを開き，次に\verb|ioctl()|でサンプリングレートなどのパラメータの設定を行う．\verb|read()|でサウンドデバイスからサウンドデータを読み出す．最後に\verb|close()|でデバイスファイルを閉じて処理を終了する．
+
+\subsubsection*{デバイスからのデータの読み出し　read()}
+\begin{examplecode}
+ \begin{verbatim}
+#include <fcntl.h>
+
+int read(int fd, char *buf, unsigned nbyte);
+
+fd            : ファイルディスクリプタ
+buf           : 入力バッファ
+nbyte         : 読み出しバイト数
+ \end{verbatim}
+\end{examplecode}
+\verb|read()|システムコールは，第1引数に\verb|open()|システムコールの返り値で得られたファイルディスクリプタ\verb|fd|を指定し，この指定されたデバイスから第2引数で指定する入力バッファへ，第3引数で指定するバイト数分だけデータを読み出す．読み出しに成功すると実際に読み出されたバイト数を返し，失敗した場合には$-1$を返す．
+
+\begin{excersize}{課題2}
+ \begin{enumerate}
+  \item play.c を参考に，マイクから入力したサウンドをファイルに保存する
+    プログラムrecord.c を作成し，それをコンパイルするとバイナリ実行ファイル
+    record が生成されるように Makefileも更新せよ．
+    さらに，保存したファイルが play で正常に
+    再生されることを確認せよ．\\(ヒント：ファイルへの保存は
+    \verb|fwrite()|)で行う\\
+ \end{enumerate}
+\end{excersize}
+
+\begin{excersize}{アドバンスド課題1}
+ \begin{enumerate}
+  \item 課題1 (3)のサンプリングレートをプログラム実行時の引数として与え
+	られるようにせよ．
+  \item 録音したサウンドを逆転して再生するプログラムを書いてみよ
+  \item play.cではファイルの入出力にはfopen/fread/fcloseを使っていたが，
+	これをopen/read/closeで書いてみよ．
+  \item soundlib.c を参考にサウンド入出力のためのクラスを作成せよ．
+ \end{enumerate}
+\end{excersize}
+
+

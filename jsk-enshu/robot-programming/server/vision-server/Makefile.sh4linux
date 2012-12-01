@@ -1,0 +1,29 @@
+TOP=../..
+include $(TOP)/common/Makefile.gen
+
+INCLUDE = -I/usr/local/include/opencv -I$(COMMON_INCLUDE_DIR)
+LIBDIR = -L/usr/local/lib
+LIBS = -lcv -lcxcore -lhighgui
+
+OBJS = $(SOCKET_SH_OBJS)
+TARGETS = vision-server vision-server2 vision-server3
+
+all: $(TARGETS)
+
+vision-server: vision-server.o $(OBJS)
+	$(CC) -o $@  $^ $(LIBDIR) $(LIBS)
+vision-server.o: vision-server.c
+	$(CC) -o $@ -c $^ $(INCLUDE)
+
+vision-server2: vision-server2.o $(OBJS)
+	$(CC) -o $@  $^ $(LIBDIR) $(LIBS)
+vision-server2.o: vision-server2.c
+	$(CC) -o $@ -c $^ $(INCLUDE)
+
+vision-server3: vision-server3.o $(OBJS)
+	$(CC) -o $@  $^ $(LIBDIR) $(LIBS)
+vision-server3.o: vision-server3.c
+	$(CC) -o $@ -c $^ $(INCLUDE)
+
+clean:
+	@rm -f *~ *.o $(TARGETS)

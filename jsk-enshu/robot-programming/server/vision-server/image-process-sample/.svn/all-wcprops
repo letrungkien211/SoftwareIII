@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/server/vision-server/image-process-sample
+END
+imagetest_from_bmp.c
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/server/vision-server/image-process-sample/imagetest_from_bmp.c
+END
+imagetest_from_bmp2.c
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/server/vision-server/image-process-sample/imagetest_from_bmp2.c
+END
+imagetest_from_bmp3.c
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/server/vision-server/image-process-sample/imagetest_from_bmp3.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/server/vision-server/image-process-sample/Makefile
+END
+imagetest_from_camera.c
+K 25
+svn:wc:ra_dav:version-url
+V 119
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/server/vision-server/image-process-sample/imagetest_from_camera.c
+END

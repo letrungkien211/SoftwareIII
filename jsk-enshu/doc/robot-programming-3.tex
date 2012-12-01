@@ -1,0 +1,470 @@
+\documentclass[a4j,twoside]{jarticle}
+%% \documentclass[9pt]{jltxdoc}
+%% \documentclass[9pt]{jarticle}
+%docinfo.txtにPDFに変換するときの情報を入れる
+\input docinfo.out
+
+\usepackage[dvipdfm]{graphicx}
+\usepackage{array, amsmath, amssymb, ascmac, supertabular, moreverb, multicol}
+\usepackage[dvipdfm]{hyperref}
+\hypersetup{urlbordercolor={1 1 1}}
+\hypersetup{bookmarksnumbered=true}
+\hypersetup{linkcolor={0 0 0}}
+%%\hypersetup{linkbordercolor={white white white}}
+\hypersetup{linkbordercolor={1 1 1}}
+\hypersetup{colorlinks=false}
+\pagestyle{headings}
+
+%講義・演習配布資料用設定集 from k-okada
+\usepackage{enshu-lec}
+%\usepackage{doc}
+
+\title{2011年度　機械情報工学科　冬学期演習\\
+ロボット行動プログラミング(3)}
+\author{
+　　　　担当教員: 岡田慧准教授(k-okada@jsk.t.u-tokyo.ac.jp),\\
+　　　　　　　　　中西雄飛助教(nakanish@jsk.t.u-tokyo.ac.jp),\\
+山口真奈美技術専門職員,\\
+TA:情報システム工学研究室\\
+}
+
+\date{平成２３年１２月９日(金)}
+\setlength{\columnseprule}{0.5pt}
+\setlength{\columnwidth}{.3\textwidth}
+\setlength{\columnsep}{1cm}
+
+%\renewcommand{\baselinestretch}{0.95}
+
+\begin{document}
+\maketitle
+
+\section{ロボット行動プログラミング}
+\begin{enumerate}{\itemsep=-4pt
+\item 第1回 12月5日 ロボット行動プログラミング(1)\\
+  サーバ・クライアントシステムとシミュレータ環境
+\item 第2回 12月6日　ロボット行動プログラミング(2)\\
+  USBカメラでの画像取得，画像処理サーバを用いたロボット行動プログラム\\
+  逆運動学を用いたアーム制御，ジョイスティックによる操縦制御
+\item {\bf 第3回 12月9日　感覚行動プログラミング}\\
+  サブサンプションアーキテクチャの利用，スレッド行動制御
+\item 第4回 12月12日 競技説明，試走会
+\item 第5回 12月13日 競技実施，表彰式，反省会
+}
+\end{enumerate}
+
+第一，二回の演習で，ソケット通信によるサーバ・クライアント方式でのロボット行動システム
+の基礎について学んでもらった，
+画像処理結果やセンサに基づき，ロボットをクライアント側の行動プログラムで制御するやり方
+が何となくイメージできたかと思う．
+
+しかし，こうした様々なセンサに基づいた，より複雑な行動をロボットに行わせようと思った際に，
+一つの条件文ループで行動タスクを記述していくと，条件分岐構造が非常に複雑になってしまう
+という問題がある．
+迷路脱出のような場合には，一つの長大な条件文で行動プログラムを記述するよりも，
+むしろ，あるセンサに対する反応行動をシンプルに記述し，各センサ反応行動の優先度のみ
+決めておいて，各行動モジュールを同時実行で走らせておく，といった
+行動記述にした方が結果としてうまくいく場合がある．
+
+こうした背景の元提唱されたシステムの一つが本日取り組んでもらう
+サブサンプションアーキテクチャである．
+ソフトウェア第三で既に岡田先生に教えてもらっているはずなので，詳細な説明はここでは省くことにする．
+
+今日の演習目的は，
+{\bf 今までの演習で行った反応行動をサブサンプションの行動モジュールとして実装し，
+全体で何らかのタスクを行ってもらうことで，一つのmainループの中における
+複雑な条件分岐構造というシステム以外にも，行動タスクが記述できることを
+体感してもらう}ことである．
+
+%% 前回の資料を忘れてしまった人は，
+%% \url{http://www.jsk.t.u-tokyo.ac.jp/~k-okada/lecture}より機械情報演習のリンクへ
+%% 飛んでもらえば，資料をダウンロードできる．なお，パスワードを聞かれる場合は，
+%% {\bf user = lecture，password = jsk-lecture}　でダウンロードできるので，
+%% ダウンロードして欲しい．
+%%
+\section{演習環境の更新}
+まず課題を始める前に，演習のプログラムが更新されバグが少なくなっているかもしれないので，
+各自ノートPC側で，いつもの以下のコマンドを打ち込み環境を最新にしておこう．
+\begin{screen}
+\small
+  \$ cd \~/prog/jsk-enshu/robot-programming\\
+  \$ svn update\\
+  \$ make
+\end{screen}
+%%
+\section{台車の整備}
+そろそろ台車が壊れ始めている班も多くなっているかと思う．
+以下の状態のもののまま進めるのはお勧めしないので，まだ症状が軽いうちに修理しておこう．
+\begin{itemize}
+\item バンパがガタガタしている．\\
+  しっかりネジ止めをした後，ネジ頭部に瞬間接着剤を付けて緩まないようにしよう．
+  本来は，瞬間接着材ではなくロックタイトというネジ止め剤を使うのが基本ではあるが，
+  瞬間接着剤でも多く付けすぎなければ問題ない．
+\item サーボの接続部が取れかかっている．\\
+  本来あるはずのネジがない，金属部品が曲がってしまっている，といったことがある場合は
+  ネジや金属部品のパーツの換えがないかをTAの人に聞いて，早めに交換しておくことをお勧めする．
+  せっかく視覚ベースで目標物まで操縦でなく自動でアプローチするプログラムが出来たとしても，
+  ガタのせいで，ボールをうまく掴めないということになったらもったいない．
+\item サーボを動かすと通信がいきなり切れる．\\
+  実はこの症状は既に２，３班出てきている．高確率でサーボを動かした際にshlinuxそのものが
+  シャットダウンされてしまっている．これは，1)サーボを動かした際の振動で物理的に
+  shlinuxへの電源ケーブルが抜けそうになっている，2)サーボ系が劣化し，駆動に大きな電流が
+  必要になってしまい，想定以上の電流が流れた際にshボードへのの供給電圧が低下する，
+  のいずれかの原因で，shlinuxがシャットダウンしてしまう(電源がいきなり切れることに相当)
+  可能性が高い．\\
+  このうち，特に2)のケースが多い．まずは，サーボを１つずつ動かし，どのサーボを動かすときに
+  システムがシャットダウンするかを調べよう．
+  次に，悪いのがサーボモジュール（黒い奴）なのか，それともボードなのかを切り分けるために，
+  悪いと思われるポートのサーボを抜き，正常なサーボ（新品か，あるいは問題なく動いていた
+    サーボ)を代わりに指し，同じようにサーボ駆動指令を送ってみる．
+    このとき，サーボを交換したにも関わらず，システムがシャットダウンする場合は，
+    ボードが悪い，逆にサーボを交換すればシステムが落ちないならばサーボが悪いことになる．
+    後者の場合は，ＴＡに正常なサーボを貰い，交換しよう．交換したサーボはガムテープを
+    張り，「故障：電流流れすぎ（日付）」を記名してＴＡに渡すこと．\\
+    ボードが悪い場合は，ボードには空きポートがまだあるはずなので，
+    空いている別のポートに指しなおし，servoparamを編集すれば使えるようになるはずである．
+    よくわからない場合は，TAに聞いてみよう．
+\end{itemize}
+さて，修理の面倒さを実感した人は特に，今後壊さないようになるべく優しい指令を
+送ってあげるように意識しよう．壊す原因としては，急に指令を送って激しい動きを
+させていたり，物にぶつかっている状態でも気にせずサーボに指令を送り続けたり，
+ということが考えられるので，なるべく意識して注意深く演習を進めていって欲しい．
+ここでの経験は，きっと今後異なるロボットを扱っていく上で非常に重要になってくると思う(\figref{robot-mente})．
+また，来年以降の３年生も使う移動台車である．情けは人のためならず（\figref{enshu-mente})の精神で，
+  なるべく優しく使ってあげよう．
+\begin{figure}[!th]
+  \begin{center}
+    \pastefig{fig/kojiro-mente.jpg}{width=0.5\hsize}
+    \caption{修理は自分のロボットとの対話である．愛着を持って接してやればロボットは応えてくれる．}
+    \figlabel{robot-mente}
+    \vspace{-5mm}
+  \end{center}
+\end{figure}
+\begin{figure}[!th]
+  \begin{center}
+    \pastefig{fig/enshu-mente.jpg}{width=0.9\hsize}
+    \caption{毎年，演習台車はTAや先生たちによって全台メンテナンスされている．君たちも2年後には，
+    この作業をすることになることを思うと，今丁寧に使っておいて損はないかもしれない．}
+    \figlabel{enshu-mente}
+    \vspace{-5mm}
+  \end{center}
+\end{figure}
+\section{サブサンプションアーキテクチャ}
+サブサンプションアーキテクチャとは小難しい説明をすれば，ロボットの行動
+記述の構造化法の一種であった．
+
+%% 複数の即応性を実現する感覚行動系のモ
+%% ジュールを並列に計算することで，ロボットの行動を実現する．ここで問題に
+%% なるのは資源の競合である．すなわち，異なるモジュールが，アームや台車な
+%% ど同じ資源を，同じタイミングで制御しようとすると，目的とする行動を実現
+%% することができない．そこで，サブサンプションアーキテクチャでは計算モ
+%% ジュール間に階層性と，上位のモジュールが下位のモジュールの出力を上書き
+%% する「抑制(Surppressor)」と，上位のモジュールが回のモジュールの出力を遮
+%% 断する「禁止(Inhibitor) 」という 2 つの競合する行動の間の調停に関する仕
+%% 組みを用意し，上位の階層が下位の階層のモジュールを包摂し下位のモジュー
+%% ルを抑制・禁止することによって行動の調停を行う．
+
+%% という物であった．御託はよいとして
+
+{\tt eus/subsumption.l}に定義されている以下のサンプルプログラムを覚え
+ているだろうか？
+
+\begin{screen}{\baselineskip=8pt
+\footnotesize
+\begin{verbatim}
+(defun test-subsumption nil
+  (let (i)
+    (setq t1 (instance subsumption-task :init :name "Wander" :priority 10
+                       :check-func #'(lambda (v) t)
+                       :action-func #'(lambda ()
+                                        (print "wander")
+                                        (unix:usleep (* 100 1000)))))
+    (setq t2 (instance subsumption-task :init :name "RightBumper" :priority 90
+                       :check-func #'(lambda (v) (> (elt v 0) 0))
+                       :action-func #'(lambda ()
+                                        (print "right")
+                                        (unix:sleep 2)
+                                        (print "right done"))))
+    (setq t3 (instance subsumption-task :init :name "LeftBumper" :priority 100
+                       :check-func #'(lambda (v) (< (elt v 0) 0))
+                       :action-func #'(lambda ()
+                                        (print "left")
+                                        (unix:sleep 3)
+                                        (print "left done"))))
+    (setq s (instance subsumption :init (list t1 t2 t3)
+                        :sensor-vector #f(0 0 0 0 0 0) :debug nil))
+    (send s :start-clients)
+    (setq i 0)
+    (do-until-key
+     (cond
+      ((> i 100) (setq sensor-vector #f( 0 0 0)))
+      ((> i 50) (setq sensor-vector #f( 10 0 0)))
+      ((> i 25) (setq sensor-vector #f(-10 0 0)))
+      (t        (setq sensor-vector #f(  0 0 0))))
+     (send s :sensor-vector sensor-vector)
+     (print (list i sensor-vector))
+     (unix:usleep (* 100 1000))
+     (incf i))
+    (send s :stop-clients)))
+\end{verbatim}
+}\end{screen}
+
+ここでは，t1,t2,t3という行動タスクを記述し，それぞれの起動条件
+(check-func)を確認し，条件に合致し，かつ，自らより優先度の高いタスクが
+稼働していなければ，その行動タスクを実行する．
+
+これをロボットの行動に応用したプログラムが以下になっていた\footnote{大
+  丈夫だと思うが，これはシミュレーション用のソフトである．これ
+  を実機で動くようにする，というのがチェックポイント２である}．
+
+\begin{screen}{\baselineskip=7pt
+\scriptsize
+\begin{verbatim}
+(warn "(demo2) ;; demo1 using subsumption~%")
+(defun demo2
+  (&optional (time 200))
+  (let ((bmp-vec) (psd-vector)
+        (red-centroid) ts)
+    ;;robot-server(simulator)とつなぐ
+    (when (not *rs-sim*) (connect-robotsim-server))
+    ;;
+    ;; subsumption の定義
+    (push
+     (instance
+      subsumption-task :init :name "Back bumper" :priority 100
+      :check-func
+      #'(lambda (s)
+	  (let ((bmp (cdr (assoc :bumper s))))
+	    (if bmp
+		(or (= (aref bmp 2) 1) (= (aref bmp 3) 1)))))
+      :action-func
+      #'(lambda ()
+          (send *rs-sim* :daisya-velocity-vector #f(100 0 0))
+          (warn "!!forward~%")))
+     ts)
+
+    (push
+     (instance
+      subsumption-task :init :name "Front bumper" :priority 90
+      :check-func
+      #'(lambda (s)
+	  (let ((bmp (cdr (assoc :bumper s))))
+	    (if bmp
+		(or (= (aref bmp 0) 1) (= (aref bmp 5) 1)))))
+      :action-func
+      #'(lambda ()
+          (send *rs-sim* :daisya-velocity-vector #f(-100 0 0))
+          (warn "!!backward~%")))
+     ts)
+
+    (setq s (instance subsumption :init ts :debug nil))
+
+    ;;腕のservoをいれる
+    (send *rs-sim* :arm-poweron-vector #f(1 1 1 1 1))
+    ;;ためしに腕を動かしてみる
+    (send *rs-sim* :arm-angle-vector #f(80 20 70 0 0) 1000)
+    (unix:usleep (* 1000 1000))
+    
+    ;;とりあえず走りはじめる
+    (send *rs-sim* :daisya-velocity-vector #f(100 0 0))
+
+    ;; subsumption をスタート
+    (send s :start-clients)
+    ;;keyを押されるまで続ける
+    (do-until-key
+      (setq bmp-vec (send *rs-sim* :bumper-vector))
+      (format t ";; bmp ~A~%" bmp-vec)
+      (send s :sensor-vector (list (cons :bumper bmp-vec)))
+      (unix:usleep (* time 1000)))
+    ;; subsumption を止める
+    (send s :stop-clients)
+    
+    ;;台車を止める
+    (send *rs-sim* :wheel-reset)
+    ;;腕に指令を送る
+    (send *rs-sim* :arm-angle-vector (float-vector 0 0 0 0 0) 3000)
+    (unix:usleep (* 1000 3000))
+    ;;最後にarmのservoをきる
+    (send *rs-sim* :arm-poweron-vector #f(0 0 0 0 0))
+    )
+  )
+\end{verbatim}
+}\end{screen}
+
+このプログラムと等価のプログラムは，第一回で試した以下のプログラムにな
+る．センサに応じたロボットの反射動作を追加したい場合，サブサンプション
+アーキテクチャを用いてdemo2の方が見通しが良い，という理屈なのだが，そ
+う感じてもらえるだろうか？
+
+\begin{screen}{\baselineskip=7pt
+\small
+\begin{verbatim}
+(defun demo1
+  (&optional (time 200))
+  (let (bmp-vec)
+    ;;robot-server(simulator)とつなぐ
+    (when (not *rs-sim*) (connect-robotsim-server))
+    ;;
+    ;;腕のservoをいれる
+    (send *rs-sim* :arm-poweron-vector #f(1 1 1 0 0))
+    ;;ためしに腕を動かしてみる
+    (send *rs-sim* :arm-angle-vector #f(80 -20 -70 0 0) 1000)
+    (unix:usleep (* 1000 1000))
+    
+    ;;とりあえず走りはじめる
+    (send *rs-sim* :daisya-velocity-vector #f(100 0 0))
+    ;;keyを押されるまで続ける
+    (do-until-key
+      (setq bmp-vec (send *rs-sim* :bumper-vector))
+      ;;(print bmp-vec)
+      ;;bumperのおされている位置に応じて、いったりきたりする
+      (cond
+       ;;前がぶつかったら
+       ((or (= (aref bmp-vec 0) 1) (= (aref bmp-vec 5) 1))
+       	(send *rs-sim* :daisya-velocity-vector #f(-100 0 0))
+       	(warn "!!!~%"))
+       ;;後がぶつかったら
+       ((or (= (aref bmp-vec 2) 1) (= (aref bmp-vec 3) 1))
+       	(send *rs-sim* :daisya-velocity-vector #f(100 0 0))
+       	(warn "!!!~%")))
+      (unix:usleep (* time 1000)))
+    ;;台車を止める
+    (send *rs-sim* :wheel-reset)
+    ;;腕に指令を送る
+    (send *rs-sim* :arm-angle-vector (float-vector 0 0 0 0 0) 3000)
+    (unix:usleep (* 1000 3000))
+    ;;最後にarmのservoをきる
+    (send *rs-sim* :arm-poweron-vector #f(0 0 0 0 0))
+    ))
+\end{verbatim}
+}\end{screen}
+
+今日の演習の最初はシミュレーション上でdemo2を起動して動作を確認し，こ
+れを実機で動くようにしてみよう．
+
+\begin{itembox}[|]{{\bf チェックポイント1: demo2プログラムの動
+      作確認}}
+ \vspace{-2mm}
+   一つ目のターミナルを立ち上げて\\
+   irteusgl \$ (load "sample-robot-server.l")\\
+   irteusgl \$ (init-server 'simple-maze)\\
+   としてシミュレーションサーバを立ち上げる．次に2つ目のターミナルを立ち上げて\\
+   irteusgl \$ (load "sample-robot-server.l")\\
+   irteusgl \$ (demo2)\\
+    とすれば動くはずである．\\
+　\vspace{-5mm}
+\end{itembox}
+
+\begin{itembox}[|]{{\bf チェックポイント2: demo2プログラムの実機での動
+      作確認}}
+ \vspace{-2mm}
+   1) ロボットサーバを立ち上げる（忘れた人は前回，前々回の資料を見てみよ
+     う）\\
+   2) eus/sample-robot-server.l にあるdemo2関数を各自の実験プログラム
+   ファイルにコピーしよう．例えばeus-client/jikken-20101210.l として，
+   ここにdefun demo2の関数をコピー＆ペーストして関数名を(demo2-real)な
+   どとする．ここではsubsumption.lで定義している関数を必要としているの
+   で，文頭に(load "/home/mechuser/prog/jsk-enshu/robot-programming/eus/subsumption.l")
+と書く必要がある．\\
+   3) 実機で動くようにするためには，(connect-robot-server)という関数が
+   呼ばれる必要がある．その為には，(load "robot-clinet.l")をいう行を実
+   験プログラムファイルの文頭に入れよう．あと，そういえばサーバのホス
+   ト名を指定しなきゃいけないけど，どこで指定するんだっけ．．．\\
+   覚えているだろうか．
+
+   irteusgl \$ (load "jikken-20101210.l")\\
+   irteusgl \$ (demo2-real)\\
+   として実機がシミュレーションと同じ動作が実現するか試してみよう．\\
+　\vspace{-5mm}
+\end{itembox}
+
+%%
+\section{本日の課題}
+
+各班で合計２００ポイント以上を獲得すること．
+
+班のメンバーで相談し役割分担や協力しながら効率よくポイントを稼いで欲し
+い．ただし，０ポイントのメンバーは認めない．
+
+\subsection{課題0: 20 Point}
+
+分からないこと，追加してほしい機能，見つけたバグ，作ってみたパッチ
+などをjsk-enshuのチケットシステムに登録するか，
+メーリングリストに投稿してみよう
+
+分からないことがたくさんある人は，何度も投稿すればよい．
+その回数分だけポイントを進呈する．
+
+\subsection{サブサンプションアーキテクチャで視覚に基づくロボットの動作
+  を実現する: 50 Point}
+
+チェックポイント２で実行したサブサンプション行動サンプルと，
+前回の演習で行った視覚認識結果の取得を組併せて，
+視覚認識結果で動くロボットの行動をサブサンプションアーキテクチャで動作させよ．
+
+例えば，人の顔を発見すると近づいていく，赤いものがあるとそちらを目指す，
+壁に当たれば跳ね返る，青いものがあれば遠ざかる，黄色いものを見つければ
+手を伸ばす，といったいくつかの行動モジュールを組み合わせることで，
+迷路を脱出する，といった例を試してみよ．
+
+完成したら，TAに動作を見てもらうとともに，書いたサブサンプション
+システムのシステム図（どのようなセンサ入力に対するどのような出力をする
+モジュールが，それぞれどのような優先順位で構成されているのか)
+を書いて，それを元に実装を説明せよ．
+
+\subsection{最終課題に向けての鍛錬: 50 Point}
+最終日の自由課題に向けて，今まで第一，二回で実現できなかった
+課題やアドバンスド課題をこなしてみよ．
+
+最終日では，
+台車によるライントレース，赤いポール，青いポールを用いたスラローム，
+パン食い実験等，各班で魅力的な課題を{\bf 自由に設定し}挑戦してみて欲しい．
+{\bf カメラを含む全てセンサ及びモータ系
+を使っている(PSDのような調子の悪いセンサは仕方ないかもしれないが)何らかの
+知的行動}の実現に是非，取り組んでもらいたい．
+
+是非今まで先輩たちが成し得なかった高度な行動
+プログラムが実現されることを期待している．健闘を祈る！
+
+例えば，{\bf 迷路の地図作成，それに基づく自己位置の同定}，などはこの台車に
+なってから一度も達成されていない行動例であるし，{\bf 何らかのオブジェクトを
+操縦なしで，画像処理に基づきアームで掴み，どこかへ運ぶ}，といったことも
+実現できていない．
+こうしたことが今までできなかった理由は，単にEusLispのクライアント行動層だけでなく，
+C言語で記述されたshlinuxでのサーバ層の実装にも問題があるからかもしれない．
+システム全体を，より洗練させることで課題に進んでいく時間も，
+今年度はたっぷり残っている．自分でシステムをデバッグしていくことで，
+理解が非常に進むと思うので頑張ってみて欲しい．
+
+最終課題でよい行動を実現するには仕込みが大切である\footnote{他の班を出
+  し抜くためにも，自分たちのロボット，ソフトウェアにしかない強みをよく
+  把握しておくことが重要である}．例えば以下の点を
+チェックしてみよう．
+\begin{itemize}
+\item{台車の速度指令，位置指令はおもったとおり動いているだろうか？ハードウェ
+アのガタなどで動作が不安定になっていないだろうか？あるいはハードウェア
+の特性により，得意な移動方向，不得意な移動方向などを把握しておくことが
+重要になってくる．第一回資料のチェックポイント６を見てみよう}
+\item{バンパセンサ，距離センサは正しく情報がとれているだろうか？動いて
+  いない場合はハードウェアの問題か，ソフトウェアの問題か切り分けよう．
+  テスタなどをつかって，期待通りの信号が出ているか，standaloneのプログ
+  ラムで信号をちゃんとFPGAで処理できているか？robot-viewreをつかっ
+  て，robot-serverでデータがちゃんと読めているか？eus-clientを使って，ちゃ
+  んとデータがeuslispの世界に送られてきているか，など何段階もチェック
+  するポイントがある}
+\item{前側のバンパが腕が邪魔で反応しない，と恐らく嘆いている人も多いと思う．
+  台車の可逆な改造（元に戻せる）はドンドンやってくれて構わないので，
+  何か問題があれば改造していこう．
+  PSDセンサの向きをかえる，ついている場所をかえる，前側バンパに何か
+  両面テープで取り付け腕があっても先にバンパが壁に当たるようにする，
+  ハンドが滑らないように何かを貼り付ける，
+  USBカメラで高い位置を見えるようにする櫓を立てる，など色々な工夫が
+  あると思う．}
+\item{パターン情報学や画像認識演習などでいくつもの画像処理を習っている
+  と思う．それをdefforeignして台車のカメラから使えるようにすれば，他の
+  班には画像処理ができて，ブッちぎれるかもしれない}
+\end{itemize}
+
+他にも，「やりたいことが漠然とあるのだけれど，実際にどのように進めていけば
+良いかさっぱり分からない」，という人は気軽にTAや先生に相談してみよ
+う．
+\end{document}

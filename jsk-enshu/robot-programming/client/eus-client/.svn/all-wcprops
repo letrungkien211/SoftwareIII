@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/jsk-enshu/!svn/ver/96/trunk/robot-programming/client/eus-client
+END
+haarcascade_frontalface_alt.xml
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/client/eus-client/haarcascade_frontalface_alt.xml
+END
+ta_demo.l
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/jsk-enshu/!svn/ver/85/trunk/robot-programming/client/eus-client/ta_demo.l
+END
+vision-lib.l
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/jsk-enshu/!svn/ver/95/trunk/robot-programming/client/eus-client/vision-lib.l
+END
+joystick-sample.l
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svnroot/jsk-enshu/!svn/ver/24/trunk/robot-programming/client/eus-client/joystick-sample.l
+END
+robot-client.l
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svnroot/jsk-enshu/!svn/ver/96/trunk/robot-programming/client/eus-client/robot-client.l
+END
+sample.l
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/jsk-enshu/!svn/ver/14/trunk/robot-programming/client/eus-client/sample.l
+END
+robot-client2.l
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svnroot/jsk-enshu/!svn/ver/9/trunk/robot-programming/client/eus-client/robot-client2.l
+END
+sample-vision.l
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svnroot/jsk-enshu/!svn/ver/78/trunk/robot-programming/client/eus-client/sample-vision.l
+END

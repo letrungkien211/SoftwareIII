@@ -1,0 +1,16 @@
+CC	= gcc
+CFLAGS	= -O2 -Wall
+
+.c.o:
+	${CC} -c ${CFLAGS} $<
+
+all: play
+
+play: play.o soundlib.o
+	${CC} -o $@ $^
+
+play.o: play.c soundlib.h
+soundlib.o: soundlib.c soundlib.h
+
+clean:
+	rm play play.o soundlib.o

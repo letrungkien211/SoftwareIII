@@ -1,0 +1,248 @@
+\documentclass[a4j,twoside]{jarticle}
+%% \documentclass[9pt]{jltxdoc}
+%% \documentclass[9pt]{jarticle}
+%docinfo.txtにPDFに変換するときの情報を入れる
+\input docinfo.out
+
+\usepackage[dvipdfm]{graphicx}
+\usepackage{array, amsmath, amssymb, ascmac, supertabular, moreverb, multicol}
+\usepackage[dvipdfm]{hyperref}
+\hypersetup{urlbordercolor={1 1 1}}
+\hypersetup{bookmarksnumbered=true}
+%\hypersetup{linkcolor={0 0 0}}
+%\hypersetup{linkbordercolor={white white white}}
+%\hypersetup{colorlinks=false}
+\pagestyle{headings}
+
+%講義・演習配布資料用設定集 from k-okada
+\usepackage{enshu-lec}
+%\usepackage{doc}
+
+\title{2011年度　機械情報工学科　冬学期演習\\
+ロボット行動プログラミング(4)}
+\author{
+　　　　担当教員: 岡田慧准教授(k-okada@jsk.t.u-tokyo.ac.jp),\\
+　　　　　　　　　中西雄飛助教(nakanish@jsk.t.u-tokyo.ac.jp),\\
+山口真奈美技術専門職員\\
+TA:情報システム工学研究室\\
+}
+
+\date{平成２３年１２月１２日(月)}
+\setlength{\columnseprule}{0.5pt}
+\setlength{\columnwidth}{.3\textwidth}
+\setlength{\columnsep}{1cm}
+
+%\renewcommand{\baselinestretch}{0.95}
+
+\begin{document}
+\maketitle
+
+\section{本日の演習内容}
+\begin{enumerate}{\itemsep=-4pt
+\item 第1回 12月5日 ロボット行動プログラミング(1)\\
+  サーバ・クライアントシステムとシミュレータ環境
+\item 第2回 12月6日　ロボット行動プログラミング(2)\\
+  USBカメラでの画像取得，画像処理サーバを用いたロボット行動プログラム\\
+  逆運動学を用いたアーム制御，ジョイスティックによる操縦制御
+\item 第3回 12月9日　感覚行動プログラミング\\
+  サブサンプションアーキテクチャの利用，スレッド行動制御
+\item {\bf 第4回 12月12日 競技説明，試走会}
+\item 第5回 12月13日 競技実施，表彰式，反省会
+}
+\end{enumerate}
+本日は，各グループのメンバで協力しながら
+今週金曜日に予定しているロボット台車競技コンテスト(\secref{contest})に向けての
+各自準備をしてもらう．
+
+なお，本日は特に課題はなく出席しか取らないが，
+\secref{evaluation}にあるように，ロボット行動プログラミングの成績は，
+主に{\bf 次回の競技実績及び，競技のために自分は何をしたかについてのレポート}
+で評価するつもりなので，それなりに真剣に取り組んでみて欲しい．
+%%
+\section{第五回での競技説明}
+\seclabel{contest}
+\subsecref{contest_set}の競技セットを{\bf 教室前方及び
+廊下}に設置しておくので，シミュレーション環境でなく\footnote{
+  ただし，実機でやる前段階としてシミュレーション環境を構築し，
+  その上でも動くようにした，というのは良いチャレンジなので
+  挑戦してみよう．シミュレーションやるより実機で直接やる方が早い，
+  という人はそれでも構わない．
+}
+{\bf 実機\footnote{
+シミュレーション環境と違い，実機では計測されるセンサ情報に誤差が
+あったり，実行した命令通りロボットが動かなかったりするので，
+それでもタスクが実行できるロバストな処理を工夫して作ってみて欲しい．
+}
+で実演し，工夫点を説明する}のが来週の課題である．
+基本的に準備ができたグループからTAのビデオカメラの前で実演
+してもらいながら工夫点を説明してもらうが，その際
+説明する人，操作する人，配線をうまくやり取りする人といった役割分担を
+きちんとして，一人の人に押し付けないように注意すること．
+
+また，各グループ，複数の競技にチャレンジしても構わないし，
+一つの競技に絞って完成度を上げてくれても構わない．
+あるいは，各自自由に自分で何か別の競技やタスクを考え，
+それについて取り組んでくれても構わない．
+複数班での合同での競技を行うのもいいだろう．
+なるべく多くのセンサ情報，モータ(車輪)，サーボ(腕)を
+使った自律的な行動デモに取り組んでいくことを期待している．
+以下に昨年度の競技ルールを参考までに挙げておこう．ただし，
+あくまで参考なので別にこのルールにとらわれる必要はない．
+\subsection{競技セットの紹介}
+\subseclabel{contest_set}
+以下の競技セットについては，{\bf 用意しているブロック，壁といった
+構成要素については変更しないが，迷路構成だとか障害物の色等は，
+TAの気分で適宜変更される}可能性があることに気をつけよう．
+こうした変更にも即座に対応できるようなプログラムになっていることが望ましい．
+どうしても，環境を変更されるとロボットがうまく動かない場合は，
+元に戻して貰えるようにTAと交渉してみよう．
+\begin{enumerate}{\itemsep=-4pt
+\item {\bf 迷路脱出}\\
+  \figref{maze-image}のような迷路を脱出してもらう．評価項目は以下を考えている．
+  迷路内にはゴールにカラーコーン(赤or青)，ゴールまでの道のりの分岐
+  には地面に目印となるビニールテープが貼られている．
+  バンパや台車位置制御だけでなく，こうした画像処理の手がかりをうまく使って欲しい．
+  \begin{figure}[!th]
+  \begin{center}
+    \vspace{-5mm}
+    \pastefig{fig/maze.eps}{width=.55\hsize}
+    \caption{迷路のイメージ}
+    \figlabel{maze-image}
+    \vspace{-15mm}
+  \end{center}
+  \end{figure}
+  %%
+  \begin{itemize}{\itemsep=-4pt
+    \item {\bf 技術ポイント}
+      \begin{itemize}{\itemsep=-4pt
+	\item 画像処理によって迷路脱出ができている\verb+                     + +300KP
+	\item バンパを迷路脱出アルゴリズムに使用している\verb+                + +100KP
+	\item 赤外線距離センサを迷路脱出アルゴリズムに使用している\verb+       + +100KP
+	\item 操縦系に切り替え，脱出を適宜サポートできる\verb+                  + +50KP
+      }\end{itemize}
+    \item {\bf ランキングポイント}\\
+      1位:200KP，2位:100KP，3位:50KP，4位:30KP，5位:10KP
+    \item {\bf 脱出時間ペナルティ}\\
+      迷路脱出に要した時間（秒数）を上述の獲得点から減点する．
+    \item {\bf 操縦ペナルティ}\\
+      操縦しても構わないが，操作１秒につき-20KPされる．
+  }\end{itemize}
+\item {\bf スラローム}\\
+  \figref{sla-image}のように，カラーブロックを並べて置くので，それらのブロックを
+  避けながら，ジグザグに進んでいく．
+  青色ブロックは右側を，赤色ブロックは左側を，緑ブロックは真ん中を通るようにする．
+  なお，色は当日の雰囲気で変わる可能性がある．
+  評価項目は以下を考えている．
+  なお，この競技に関しては，{\bf 基本的に操縦は認めない}が，
+  コースアウトした場合に，操縦で復帰させることができれば
+  技術点を支給する．
+  \begin{figure}[!th]
+  \begin{center}
+    \vspace{-5mm}
+    \pastefig{fig/sla.eps}{width=.55\hsize}
+    \caption{スラロームのイメージ}
+    \figlabel{sla-image}
+    \vspace{-15mm}
+  \end{center}
+  \end{figure}
+  \begin{itemize}{\itemsep=-4pt
+    \item {\bf 技術ポイント}
+      \begin{itemize}{\itemsep=-4pt
+	\item 画像処理によってブロック回避ができている\verb+    + +100P
+	\item バンパ処理によってブロック回避ができている\verb+   + +50P
+	\item 赤外線距離センサによってブロック回避ができる\verb+  + +50P
+	\item コースアウト時の復帰が画像処理で可能\verb+        + +100P
+	\item コースアウト時の復帰が操縦系に切り替えて可能\verb+ + +50P
+      }\end{itemize}
+    \item {\bf ランキングポイント}\\
+      1位:200P，2位:100P，3位:50P，4位:30P，5位:10P
+    \item {\bf ゴール到達時間ペナルティ}\\
+      スラローム攻略に要した時間（秒数）を上述の獲得点から減点する．
+    \item {\bf その他のペナルティ}\\
+      一回ブロックに接触するにつき，-20P，
+      コースアウトして一つのブロックを無視するにつき，-50P
+  }\end{itemize}
+\item {\bf パン食い競争}\\
+  \figref{pan-image}のような紐にぶら下がった球体に近づきアームで掴み，
+  色ブロックで作られた囲いの中に運んで入れる．
+  \begin{figure}[!th]
+  \begin{center}
+    \vspace{-4mm}
+    \pastefig{fig/pankui.eps}{width=.65\hsize}
+    \vspace{-5mm}
+    \caption{パン食い競争のイメージ}
+    \figlabel{pan-image}
+    \vspace{-10mm}
+  \end{center}
+  \end{figure}
+  \begin{itemize}{\itemsep=-4pt
+    \item {\bf 技術ポイント(各100P)}
+      \begin{itemize}{\itemsep=-4pt
+	\item 画像処理によって近づいて手で球に触れられる
+	\item 画像処理によってブロック枠まで近づける
+	\item 画像処理で球を掴む
+	\item 画像処理で球を掴みブロック内に球を納める
+	\item 操縦によって球をつかみブロック内に球を納める
+      }\end{itemize}
+    \item {\bf ランキングポイント}\\
+      入れた個数が多い順にランキングする．
+      1位:200P，2位:100P，3位:50P，4位:30P，5位:10P
+    \item {\bf ゴール到達時間ペナルティ}\\
+      攻略に要した時間（秒数）を上述の獲得点から減点する．
+      一つ入れた時点で辞めてもよいし，すべての球を入れてもよい．
+      ただし，時間制限は5分とする．
+  }\end{itemize}
+\item {\bf 自由演技(1000P(まあまあ)，2000P(すごい)，3000P(感動))}\\
+  上述の競技に縛られることなく，各グループの自由な発想に基づいた
+  面白い感覚行動デモンストレーションをやってみよう．以下は例である．
+  \begin{itemize}{\itemsep=-4pt
+    \item 顔認識で岡田先生の近くに来て，先生から渡されたブロックを
+      ゴールまで運ぶ．
+    \item ブロックを積んである場所からブロックを持ってきて，何かオブジェクトを
+      作る．
+    \item チーム対戦で騎馬戦をしてみる．
+    \item ３対３とかでフットサルをしてみる．
+  }\end{itemize}
+}\end{enumerate}
+なお，レギュレーションは皆の実演を見ながら適宜調整する可能性がある．
+点数はともかく楽しんでやってもらえると有り難い．
+%%
+%%
+%%
+\section{ロボット行動プログラミングの評価}
+\seclabel{evaluation}
+ある程度真剣にロボット行動プログラミングに取り組んでくれれば十分だが，
+一応以下の評価基準に従って判断していくつもりである．
+  \begin{enumerate}{\itemsep=-4pt
+    \item 実演がうまくいったか．よく動いているか(獲得Pが高いか)
+    \item レポートがきちんと書けているか
+      \begin{itemize}{\itemsep=-4pt
+	\item 自分たちの選択競技に対するアプローチ(簡潔に的確に説明せよ)\\
+          {\bf 移動台車側/ノートPC側で，それぞれどのようなプログラムを起動し，
+          どのようなデータをやりとりしているか，を示す簡単な図}を描くこと．
+	\item 自分のグループ内での役割，工夫点，成功理由の考察\\
+          修理，ハードウェアの改造も重要な部分である．実施した場合は是非
+          レポートに写真や改善内容を記述しておこう．
+	\item アプローチの問題点，課題は何だったか
+	\item ロボット行動プログラミング演習に対する感想\\
+	  もっとこうした方がいい，ここがわかりにくいのでこうした方がいい等，
+	  来年の君たちの後輩がよりよい演習環境で学んでいくためにはどうすべきか
+	  という意見を期待する．
+      }\end{itemize}
+    \item 自分の担当したソースコード\\
+      構造化して記述できているか．第三者が見てもわかりやすいか．
+      無駄な部分はないか．
+  }\end{enumerate}
+
+\begin{screen}
+なお，{\bf 2011年12月31日}までに上述の内容を書いたレポートを{\bf 学籍番号.pdf}として，
+自分の担当した部分のソースコード群を{\bf 学籍番号.tgz}として，
+\begin{verbatim}
+  enshu2011@jsk.t.u-tokyo.ac.jp
+\end{verbatim}
+宛に，件名を{\bf 学籍番号(半角)}
+としたメールに添付して提出せよ．
+ファイルサイズは，常識的に考えて大きくても1MBに収まるようにすること．
+\end{screen}
+%%
+\end{document}

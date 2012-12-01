@@ -1,0 +1,16 @@
+CC	= gcc
+CFLAGS	= -O2 -Wall
+
+.c.o:
+	${CC} -c ${CFLAGS} $<
+
+all: server-nomulti
+
+server-nomulti: server-nomulti.o socketlib-nomulti.o
+	${CC} -o $@ $^ $(LIBS)
+
+server-nomulti.o: server-nomulti.c socketlib.h
+socketlib-nomulti.o: socketlib-nomulti.c socketlib.h
+
+clean:
+	rm server-nomulti server-nomulti.o socketlib-nomulti.o

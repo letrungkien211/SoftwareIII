@@ -1,0 +1,12 @@
+CC	= gcc
+CFLAGS	= -O2 `pkg-config opencv --cflags`
+LIBS	= `pkg-config opencv --libs`
+
+.c.o:
+	${CC} -c ${CFLAGS} $<
+
+all: capture
+
+capture: capture.o
+	${CC} -o $@ $^ $(LIBS)
+

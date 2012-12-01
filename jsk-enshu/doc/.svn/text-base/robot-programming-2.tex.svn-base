@@ -1,0 +1,1159 @@
+\documentclass[a4j,twoside]{jarticle}
+%% \documentclass[9pt]{jltxdoc}
+%% \documentclass[9pt]{jarticle}
+%docinfo.txtにPDFに変換するときの情報を入れる
+\input docinfo.out
+
+\usepackage[dvipdfm]{graphicx}
+\usepackage{array, amsmath, amssymb, ascmac, supertabular, moreverb, multicol}
+\usepackage[dvipdfm]{hyperref}
+\hypersetup{urlbordercolor={1 1 1}}
+\hypersetup{bookmarksnumbered=true}
+\hypersetup{linkcolor={0 0 0}}
+%%\hypersetup{linkbordercolor={white white white}}
+\hypersetup{linkbordercolor={1 1 1}}
+\hypersetup{colorlinks=false}
+\pagestyle{headings}
+
+%講義・演習配布資料用設定集 from k-okada
+\usepackage{enshu-lec}
+%\usepackage{doc}
+
+\title{2011年度　機械情報工学科　冬学期演習\\
+ロボット行動プログラミング(2)}
+\author{
+　　　　担当教員: 岡田慧准教授(k-okada@jsk.t.u-tokyo.ac.jp),\\
+　　　　　　　　　中西雄飛助教(nakanish@jsk.t.u-tokyo.ac.jp),\\
+山口真奈美技術専門職員,\\
+TA:情報システム工学研究室\\
+}
+
+\date{平成２３年１２月６日(火)}
+\setlength{\columnseprule}{0.5pt}
+\setlength{\columnwidth}{.3\textwidth}
+\setlength{\columnsep}{1cm}
+
+%\renewcommand{\baselinestretch}{0.95}
+
+\begin{document}
+\maketitle
+
+\section{ロボット行動プログラミング}
+\begin{enumerate}{\itemsep=-4pt
+\item 第1回 12月5日 ロボット行動プログラミング(1)\\
+  サーバ・クライアントシステムとシミュレータ環境
+\item {\bf 第2回 12月6日　ロボット行動プログラミング(2)}\\
+  USBカメラでの画像取得，画像処理サーバを用いたロボット行動プログラム\\
+  逆運動学を用いたアーム制御，ジョイスティックによる操縦制御
+\item 第3回 12月9日　感覚行動プログラミング\\
+  サブサンプションアーキテクチャの利用，スレッド行動制御
+\item 第4回 12月12日 競技説明，試走会
+\item 第5回 12月13日 競技実施，表彰式，反省会
+}
+\end{enumerate}
+
+第一回では，ソケット通信によるサーバ・クライアント方式でのロボット行動システム
+の基礎について学ぶとともに，実機サーバと同一のインタフェース(命令コマンド，プロトコル)
+を有するシミュレータサーバを使うことで，実機とシミュレータをほぼ同一の行動
+クライアントプログラムで動かすことができることを学んでもらった．
+
+第二回では，こうした行動システムの上に構築された，
+{\bf 画像処理，アーム制御，ジョイスティック操縦}といった機能
+の使い方や実装について学んでもらい，最終日に向けて，より高度なロボット行動プログラムを
+皆で作ってもらうための下準備をしてもらう．
+なお，機能が追加されただけで，基本的なシステム(\figref{enshu-system})は前回と同一であるので，
+使い方やシステム構成を忘れた人は前回の資料を良く読み，思い出すようにして欲しい．
+少なくとも，{\bf robot-serverの起動，EusLispでのシミュレータの起動，
+EusLispでのクライアントプログラムでの実機/シミュレータ台車の動作}，は覚えているものとして
+資料を進めていく．
+
+なお，本日の資料はウェブにも置いてある．色が見にくい場合はpdfを以下からダウンロードしてみよう．
+
+{\footnotesize{
+\begin{verbatim}
+ wget --user=lecture --password=jsk-lecture http://www.jsk.t.u-tokyo.ac.jp/~nakanish/enshu/robot-programming-2.pdf
+\end{verbatim}
+}}
+
+\begin{figure}[!th]
+  \begin{center}
+    \pastefig{fig/enshu-system2.eps}{width=1.1\hsize}
+    \caption{演習のシステム全体概要図}
+    \figlabel{enshu-system}
+    \vspace{-5mm}
+  \end{center}
+\end{figure}
+
+%% 資料を忘れてしまった人は，
+%% \url{http://www.jsk.t.u-tokyo.ac.jp/~k-okada/lecture}より機械情報演習のリンクへ
+%% 飛んでもらえば，資料をダウンロードできる．なお，パスワードを聞かれる場合は，
+%% {\bf user = lecture，password = jsk-lecture}　でダウンロードできるはずである．
+%%
+%%
+\section{演習の前に：演習環境の更新}
+演習環境が最新であることを前提に資料は作られている．
+少なくとも，各自ノートPC側で，
+\begin{screen}
+  \$ cd \~/prog/jsk-enshu/robot-programming\\
+  \$ svn update\\
+  \$ make
+\end{screen}
+%$
+を行って環境を最新にせよ．
+%% なお，実機への行動プログラミングがpythonからも行えるようになってきている．
+%% サーバ・クライアント方式によりロボット行動がプログラムできていれば，構わないので
+%% 興味がある人やpythonが得意な人はそちらで試してみるのも面白い\footnote{
+%% ただし，TAは必ずしもpythonに慣れているわけではないので，演習サポートからは外れるので，
+%% 挑戦する人は自己責任でやってみよう．}．
+
+また，本日はsshやscpを多用することになるので，台車のログインに時間がかかると
+困ってしまう．TA環境では，以下のように設定を変更するとログインが早くなったので試してみて欲しい．
+以下は{\bf 台車側のshlinuxの設定}であることに注意しよう．
+\begin{screen}
+  台車shlinux上にログインし,/etc/resolv.confの以下の行をコメントアウトしてリブート\\
+　  search jsk.t.u-tokyo.ac.jp\\
+　  nameserver 192.168.96.209\\
+  具体的には，thinkpadの端末からminicomやsshで台車shlinuxにログインし，\\
+  {\bf \# vi /etc/resolv.conf}\\
+  として，viで行頭に {\bf #} を付け足してもらえれば良い．\\
+  {\bf \# reboot}
+  として，shlinuxを再起動
+\end{screen}
+viは，escapeを押してiで;を足して，escapeを押して:wqでsaveされるはずである．これで
+思い出せない人はGoogle先生にお願いしよう．
+
+\section{演習システムにおける画像処理サーバ・クライアント}
+\seclabel{vision}
+台車のshlinuxにUSBカメラを挿し，そのUSBカメラの画像を
+shlinux側で起動したサーバでキャプチャを行い，
+画像データをソケット通信で，ノートＰＣ側のクライアントプログラム
+に渡す，というのが基本的な流れである．
+
+ここで少しややこしいのが，画像処理(例えば色抽出だとか，テンプレートマッチング，
+顔発見，エッジ抽出等)をサーバ側・クライアント側のどちらで行うのが良いか，
+ということである．
+前回の演習において，サーバ側(台車shlinux側)のCPUは貧弱なので，なるべく重い
+処理はクライアント側(ノートPC側)で行うのが良い，と説明を行った．
+その観点からすると，「画像処理＝重い処理」であるので，画像処理はクライアント
+(ノートPC側)で行うのが良いといっていい．
+
+ただ，画像の場合，バンパやPSDセンサと違って，転送するデータが非常に大きいというのが
+問題である．単純な実装をすれば，1frame毎に画素数分(君たちが使うUSBカメラでは640x480)
+のデータを送る必要が出てしまう．当然，送ることのできるデータ量には制限があるので，
+大きなデータを送ると，コマオチすることになってしまう\footnote{
+例えば，USBカメラ自体は30FPS程度出るものを使ったとしても，ソケット通信に画像データを
+送ろうとすると，5FPS程度まで落ちてしまう，といったことが起きてしまう．
+加えて，今年度よりネットワークを有線から無線に変更したために，より通信が遅くなって
+しまっているのでさらに工夫をする必要が出てくる．
+}．
+従って，画像サーバ・クライアントの場合は，{\bf 処理の重さだけでなく，送信データの大きさ}
+も考慮して，どちらでどのような処理を行うかを考える必要があるのが，難しいところである．
+
+このようなことを踏まえて演習台車では，
+\begin{screen}
+\begin{itemize}
+\item sh側で実際にキャプチャされた画像がどのようなものであるかを確認するために，
+  送信データが大きいという問題はあるものの，一先ず画像サーバは
+  画像データそのものもクライアント側に渡すことができるように実装している．
+  ただし，データ量を小さくするために，画素数を間引いて送信したり，
+  jpeg圧縮を行い画質を落として送信するように工夫されている．
+  また，デバッグが不要な場合は画像データ送信を行わないように実装することで，
+  画像処理に基づく行動ループの周期の向上を狙うことが可能になっている．
+\item 比較的処理が軽い画像処理(色抽出，ラベリング)はshlinux(サーバ側)で行い，
+  処理結果をクライアント側に渡すことができるように実装している．
+\item より高度な処理(顔認識等)を行う場合は，shlinux側では処理が遅すぎるので，
+  画像データの送信によるコマオチはある程度許容して，画像データをクライアント側に送り，
+  クライアント側で処理を行うことにする．
+\end{itemize}
+\end{screen}
+のように，いくつか画像処理の内容(重さ)に応じてサーバ・クライアントのどちら側で行うかを
+適宜変えながら実装がなされている．非常に分かりにくいかもしれないが，
+今日の演習では，画像処理がどちら側で実行されているかも意識しながら是非進めていって欲しい．
+%%
+\subsection{ビジョンサーバ}
+まず，ビジョンサーバ(shlinux側)について説明を行う．
+本体は，
+robot-programming/server/vision-server/vision-server.cに記述されており，以下のような役割から
+構成されている．
+\begin{screen}
+\begin{itemize}{\itemsep=-4pt
+  \item {\bf クライアントとの通信}\\
+    ロボットサーバと同じように，ソケット通信(ただし{\bf portは9000番}を用いる)を介して
+    画像データや画像処理結果(例えば色重心座標)をクライアントプログラム(ノートPC側)とやり取りする．
+  \item {\bf クライアントからの命令（コマンド）解釈} \\
+    vision-server.c内のinterpreter関数に
+    定義されている．write-rawdataとあると生の画像データ列を，write-process-dataとあると
+    処理後の画像データ列を，resultとあると処理結果を返すようにしている．
+  \item {\bf 画面キャプチャ}\\
+    shlinuxのUSBに接続したカメラ画像を，OpenCVの機能を使って，vision-server.cのメインループで
+    キャプチャしている．
+  \item {\bf 画像処理}\\
+    OpenCVのキャプチャループ中に簡単な画像処理(色抽出等)も行う．
+    vision-server.cでは，赤色抽出を行い，その重心位置を計算していて，
+    その結果をクライアントからの{\bf resultコマンド}に対して返すようになっている．
+}\end{itemize}
+\end{screen}
+
+さて，大まかな内容を説明したところで，ビジョンサーバを起動する前の下準備として，
+{\bf 移動台車にUSBカメラを接続し，認識されているかを確認しよう}．
+USBカメラは一班につき１個，TAから渡してもらうこと．
+なお，{\bf USBカメラは原則として演習終了時に返却すること．}
+\begin{itembox}[|]{{\bf チェックポイント1: USBカメラデバイスの確認}}
+ \vspace{-2mm}
+   台車にログイン\\
+    \$ ssh root@192.168.x.y\\
+   USBカメラを台車に接続した状態で\\
+    \# ls /dev/video0\\
+　\vspace{-5mm}
+\end{itembox}
+として，{\bf /dev/video0が実際にあるか}を確認してみよう．何回抜き差ししても見つからない場合は，
+{\bf 一度，USBポートにUSBカメラを接続した状態で，shlinuxを再起動}してみて，もう一度確かめて
+欲しい．それでもできない場合は，故障の可能性もあるのでTAを呼ぶこと．
+
+なお，USBカメラのデバイスドライバはsourceforgeに上がっているuvcvideoというドライバを
+sh4用にクロスコンパイルしたものをinsmodしておくことで，/dev/videoを介して
+データをやり取りできるようになっている．
+
+さて，下準備ができたところでサーバプログラムを用意してみよう．
+今年度より無線化に対応するためのjpeg圧縮をopencvから行うために，opencvを1.1から2.1へと
+バージョンを上げている．前回の演習でクロスコンパイラ(sh4-linux-gcc)のバージョンを
+上げてもらったのは，実はこのopencv2.1をコンパイルするためにはgccのバージョンが4以上である
+必要があったから，という理由があったりする\footnote{
+なお，昨年度までは，shlinux側で動く画像サーバプログラムは，ノートＰＣのLinuxでのクロスコンパイル
+を行わずにsh4でコンパイルを行っていた．理由は，ビジョンサーバで使っているOpenCVのライブラリ
+もクロスコンパイル時にリンクできるようにする必要があるのだが，そのためには，
+その他の色々なライブラリもsh4用に用意する必要が出てきて，環境が構築できなかったためである．
+このため，昨年度までは，ビジョンサーバのプログラムだけは{\bf クロスコンパイルせずに，
+台車のsh4上にログインして，台車のnativeなコンパイラ(gcc)を使って実行ファイルのコンパイルを行って
+おり，非常にコンパイルが遅く開発効率が非常に悪かった．}
+
+今年度からは，opencvのライブラリもクロスコンパイル可能となったため，ノートＰＣ側で
+全てクロスコンパイルすることができるようになっているはずである．}．
+
+具体的には，以下のようにUbuntuの端末上で実行することで環境構築やサーバ起動が可能である．
+\begin{itembox}[|]{{\bf チェックポイント2: サーバプログラムのクロスコンパイル及び実行ファイルのコピー}}
+  \vspace{-2mm}
+  \begin{verbatim}
+    $ cd ~/prog/jsk-enshu/robot-programming/server/vision-server
+    $ make
+      画像サーバプログラムをクロスコンパイル
+    $ make copy
+      画像サーバ実行ファイルをshlinuxの~/bin以下にコピー
+    $ ssh root@192.168.x.y
+     台車にログイン(以降は，台車端末上)
+
+    ロボットサーバと同様，実行ファイルはbin以下にコピーされる
+    # cd ~/bin
+    # ./vision-server
+    で起動完了である．
+    ただし，当然USBカメラを接続していなければ，起動しないので注意すること．
+　　/dev/video0があるのに，異常終了する場合は，何回か起動してみよ．
+　　経験上，２〜３回起動してみるとクライアントの待ちうけ状態になるはずである．
+　　height=480, width=640 という行が出てきたら正常．
+  \end{verbatim}
+  \vspace{-10mm}
+\end{itembox}
+%$
+さて，ビジョンサーバを立ち上げただけの状態では，見かけ上何も起きていないように見える．
+しかし実は内部ではsh4の性能限界ギリギリを使ってUSBカメラのキャプチャを行っている．
+サーバを上げているものとは別の端末でshlinuxにログインし，{\bf top}とコマンドを打つと，
+CPUのほとんどの能力を食いつぶしていることがわかるだろう．
+また，前回のロボットサーバと同様，{\bf 複数のビジョンサーバは立ち上げることができない}
+ことに注意しよう．
+%%
+%%
+%%
+\subsection{ビジョンクライアント}
+shlinux上の画像サーバとソケット通信するノートPC側画像クライアントの例として，
+\begin{itemize}
+\item {\bf vision-viewer}\\
+  C言語で記述された，USBカメラでのキャプチャ画像表示を行うクライアントプログラム
+\item {\bf sample-vision.l}\\
+  EusLispで記述された，画像サーバからの処理結果に応じて，ロボットの行動を変化させる
+  サンプルプログラム．
+\item {\bf vision-lib.l}\\
+  画像サーバからの画像データをソケット通信で受け取り，画像処理を行うC言語で記述された
+  処理関数を呼び出し，処理結果を表示するEusLispのサンプルプログラム
+\end{itemize}
+の3つを用意しているので，実際に試してみよう．
+%%
+\subsubsection{vision-viewer}
+画像サーバを起動しただけだと，shlinuxで実際にどのようなカメラ画像が取得
+されているのかを確認できないので非常に不便である.画像データを表示してくれる
+クライアントプログラムがvision-viewerとなる．
+{\bf robot-programming/client/vision-viewer/vision-viewer.c}
+が本体プログラムの場所である．
+
+画像処理プログラムの構築を行う場合は，このツールを使って適宜内部処理を覗いてみないと，
+sh側で何が行われているかが判断不能なので，{\bf 今後何回も使うであろう道具となる
+プログラム}なので使い方をよく覚えておいて欲しい．
+さて使い方だが，前回使ったrobot-viewerとほぼ同じで，以下のようにすれば良い．
+\begin{itembox}[|]{{\bf チェックポイント3: vision-viewerの使い方}}
+ \vspace{-2mm}
+  \begin{verbatim}
+    ノートPCLinux上で，
+    $ cd ~/prog/jsk-enshu/robot-programming/client/vision-viewer
+    $ make
+     ~/prog/jsk-enshu/robot-programmingで一度makeしていた場合は，何も起きない
+     ただし，今後プログラムファイルを弄った場合は，makeしてコンパイルを行うこと．
+
+    以下，台車でvision-serverが立ち上がっている状態で，
+    $ ./vision-viewer
+     とすると，vision-serverの方では，Connectedと接続された旨が表示され，
+　　 手元のノートＰＣ上では，窓が二つ立ち上がり，移動台車のUSBカメラの様子と
+　　 処理後の赤色抽出の結果が出力されているはずである．また，端末では， 
+      result is #f(hoge hoge)
+     のような表示が更新され続け，画像処理結果（この場合，赤色の画像上での重心座標）
+　　 がクライアント側で取得できていることが確認できるだろうか．
+
+　　 試しに，赤そうなものを動かしてみて欲しい．
+　　赤色抽出にRGBを使っているため，あまりロバストでない．最終日の競技会を考える
+　　と，いい処理を行える画像サーバ処理を考えて実装していくのも重要になるだろう．
+  \end{verbatim}
+ \vspace{-10mm}
+\end{itembox}
+%$
+\begin{figure}[!htbp]
+\begin{center}
+  \includegraphics[scale=0.6]{./fig/vision-viewer.jpg}
+  \caption{vision-viewerの様子}
+  \label{fig:vision-viewer}
+\end{center}
+\vspace{-5mm}
+\end{figure}
+うまくいくと，\figref{vision-viewer}のようになるはずである．
+なお，{\bf Ctrl C}で終了できる．
+このクライアントプログラムもrobot-viewerと同じように，3人同時に接続は可能だと思うが，
+画像データは重いため{\bf 複数人が繋いでいると，更新速度が遅くなってしまう}かもしれない．
+実際に，画像処理サーバを開発する場合は，開発している人だけがこのクライアントを
+使って内部処理を確認する，くらいが妥当だろう．
+
+なお，この画像表示クライアントの本体は，vision-viewer.cであるが，中身は非常に簡単で(30行)，
+ソケット通信でサーバにつないで，毎回のループで，write-rawdataと送信して生画像データを
+取得して表示し，write-processdataと送信して処理後画像データを取得して表示し，
+resultと送信して重心座標を取得して表示している．これらの画像表示にはOpenCVのライブラリ
+を利用している．
+ただし，画像の表示に関する関数は，実際にはvision-viewer.cではなく，
+visionlib.c内で記述されている．一般的なOpenCV画像処理サンプルプログラムとほぼ同じ
+はずであるので，確認してみて欲しい．
+%%
+%%
+\subsubsection{jpgvision-server及びjpgvision-viewer}
+さて，今年度よりネットワークが無線化したため昨年度よりもさらに画像通信への
+負荷が高くなり，演習が円滑に行えなくなっている可能性がある．
+そこで，{\bf 新たにサーバサイドで画像をjpeg圧縮してサイズを小さくしてから，画像データを
+送信し，クライアントサイドでjpeg圧縮を解凍して表示する}，ということで少しでも
+画像送信速度の改善を狙ったサンプルも用意している．
+使い方はvision-server及びvision-viewerと全く同じだが，それぞれ実行ファイルが異なる．
+プログラムはそれぞれjpgvision-server.c及びjpgvision-viewer.cの二つとなる．
+
+使い方は以下である\footnote{
+演習準備段階では，jpeg圧縮の画質を相当落とさないと満足できる速度は達成できなかった．
+jpeg圧縮のパラメタはjpgvision-server.cのjpeg\_paramsの第２引数になる．
+小さくすればする程，画質が低下するが画像データサイズは小さくなるはずである．試してみよう．
+}．
+
+{\small{
+\begin{itembox}[|]{{\bf チェックポイント3-1: jpgvision-server及びjpgvision-viewerの使い方}}
+ \vspace{-2mm}
+  \begin{verbatim}
+    1)jpeg圧縮画像サーバのクロスコンパイル/コピー/起動
+     ノートPCLinux上で，
+     $ cd ~/prog/jsk-enshu/robot-programming/server/vision-server
+     $ make
+     ~/prog/jsk-enshu/robot-programmingで一度makeしていた場合は，何も起きない
+     ただし，今後プログラムファイルを弄った場合は，makeしてコンパイルを行うこと．
+     $ make copy
+      実行ファイルをshlinuxにコピー
+     $ ssh root@192.168.x.y
+      台車にsshでログインして，（↓は台車内)
+     # cd ~/bin
+     # ./jpgvision-server
+
+    2)jpeg圧縮画像ビューアのコンパイル/起動
+     $ cd ~/prog/jsk-enshu/robot-programming/client/vision-viewer
+     $ make
+      ~/prog/jsk-enshu/robot-programmingで一度makeしていた場合は，何も起きない
+       ただし，今後プログラムファイルを弄った場合は，makeしてコンパイルを行うこと．
+     以下，台車でvision-serverが立ち上がっている状態で，
+     $ ./jpgvision-viewer
+     　立ち上がる窓はvision-viewerのときと同様，生画像と赤色抽出画像結果の二つとなる．
+     　気持ち速くなったことが体感できただろうか.
+  \end{verbatim}
+ \vspace{-10mm}
+\end{itembox}
+}}
+%$
+
+%%
+%%
+%\clearpage
+\subsubsection{sample-vision.l}
+まず，ノートPC側で起動したEusLispのインタプリタ環境から，
+画像サーバでの画像処理結果(色抽出重心)をソケット通信を介して取得する方法に
+ついて説明しよう．
+vision-server(あるいはjpgvision-server)に繋ぐEusLispクライアントプログラムは，前回説明した
+robot-serverに繋ぐEusLispクライアントプログラムと同様の場所，
+{\bf jsk-enshu/robot-programming/client/eus-client}の下にある．
+
+引き続き，vision-server(あるいはjpgvision-server)との接続方法を紹介する．
+
+{\small{
+\begin{itembox}[|]{{\bf チェックポイント4: EusLispインタプリタ環境での画像サーバ処理結果の取得}}
+ \vspace{-2mm}
+  \begin{verbatim}
+　　irteusglをemacsのshellで起動する．eus-clientディレクトリへ移動
+   irteusgl $ (cd "~/prog/jsk-enshu/robot-programming/client/eus-client")
+
+   irteusgl $ (load "robot-client.l")
+    robot-client.lの中には，前回説明したrobot-serverとだけでなく
+    vision-server(jpgvision-server)との接続関数も定義されているので，
+    サーバとの接続関数が使えるようになる
+    (サーバ側がjpgvision-serverだろうとvision-serverだろうと，
+　　 Euslispのクライアントプログラムは同じものを使うことができる)
+ 
+   irteusgl $ (connect-vision-server)
+    これでvision-serverと接続され，以降はやりとりのインスタンスが*vs*
+    にバインドされる．vision-serverから情報を貰うには，この*vs*に対して
+　　methodを送ればいいわけである．前回の*rs*の画像サーバ版である．
+
+    画像処理結果を取得するには，
+   irteusgl $ (send *vs* :result)
+    と打てばよい．こうすると，((:centroid #f(hoge hoge)))
+    のような結果が返ってくるはずである．
+     (jpgvision-serverを起動している場合は，
+     ((:centroid #f(hoge hoge)) (:area uge))のような結果が返ってくる．)
+　　これは，vision-serverで，resultと来た際に返した処理結果，
+　　（今回の例では，赤色画像の重心座標）が返ってきている．
+
+　　各班のうち，一人，vision-viewerを立ち上げておき，実際の描画画面を
+　　見て，赤いものを動かしてみながら，
+     (send *vs* :result)
+    としたときの結果がそれに応じて動いていることを確認してみよ．
+    何回も打つのが面倒な場合は
+   irteusgl $ (do-until-key (print (send *vs* :result)))
+    とすればよい．これも前回のバンパのときにやっているはずである．
+    キーを打つまでループしてくれるので便利である．
+  \end{verbatim}
+ \vspace{-10mm}
+\end{itembox}
+}}
+%$
+
+なお，画像サーバに対するコマンドは，付録に載せておいたので参照してもらいたい．
+
+では次に，この知識を元に，ある入力が来たときに，ある行動をするような
+シンプルな反応系のロボット行動プログラムを記述するにはどうすればいいだろうか．
+それを記述したものが，{\bf sample-vision.l}なので見てみて欲しい．
+ただし，{\bf 今度は，画像処理結果を貰うだけでなく，ロボットを動かすので，
+画像サーバを起動している端末とは別の端末で改めて，
+shlinuxにsshでログインし，前回説明したrobot-serverを起動しておく必要があることに
+注意せよ．}
+
+動かし方はとても簡単で，以下のようにすればいい．emacsのシェルでirteusglが走った
+状態にしておいて，
+\begin{itembox}[|]{{\bf チェックポイント5: EusLispでの画像処理サーバ通信結果に基づくロボット行動サンプル}}
+ \vspace{-2mm}
+  \begin{verbatim}
+   irteusgl $ (load "sample-vision.l")
+    すると，
+     (connect-robot-server)
+     (connect-vision-server)
+     (demo)
+    というメッセージが返ってくる．
+　　ここで，上の二つは，sample.lの中で(load "robot-client.l")
+    として，さっきまで説明したサーバと繋ぐための関数定義ファイルを
+　　ロードすると自動で出てくるメッセージなので気にしない．
+ 
+    ここでは，(demo)と打って実行すればいい．
+  irteusgl $ (demo)
+    画像処理(赤色抽出重心位置)結果に応じて，腕が動くはずである．
+  \end{verbatim}
+ \vspace{-10mm}
+\end{itembox}
+なお，赤色抽出パラメタは，実装準備者の都合上，{\bf FC Barcelonaの赤色}\footnote{
+スペインのスポーツクラブである．サッカーやハンドボール，バスケットボールなど様々な
+スポーツ団体を運営している．ちなみに私はRivaldoが居た頃からのファンである．まさか
+こんなに強くなるとは..
+}が良く出るようにチューンされている．テカテカしている赤はあまり良くないようである．
+少し暗めで反射を抑えた控えめな赤色を身の回りで探して頑張ってみよう\footnote{
+なお，色処理の閾値はvision-serverプログラム内を弄っても構わないが，
+課題2以降で行う，機能を強化したvision-server2,3を使うことでEusLisp側から
+閾値を調整できるようになっているので，それまでは適当に進めておくのも手である．
+}．
+
+sample-vision.lの中身は以下のような構成になっている．
+\begin{screen}
+\begin{enumerate}{\itemsep=-4pt
+\item {\bf サーバ接続関数定義ファイルrobot-client.lのロード}
+\item {\bf ロボット，ビジョン両接続関数connect-serversの定義}
+\item {\bf demo関数の定義}
+  \begin{enumerate}{\itemsep=-4pt
+    \item サーバとの接続処理\\
+      whenを使って*rs* *vs*がなければ，サーバと接続するように書いてある．
+    \item 腕のサーボON\\
+      arm-poweron-vectorを使って根元軸だけサーボを入れる
+    \item ループ処理 do-until-key関数を使ってキー入力あるまでループ処理\\
+      1. *vs*に対してresultメソッドを送り，vision-serverから赤色重心座標を取得\\
+      2. 重心座標に応じて，目標角度を決定\\
+      3. *rs*に対して，arm-angle-vectorメソッドを使って，目標角度を送る\\
+      4. 遷移時間の間待ち，ループの1に戻る
+    \item 腕のサーボOFF\\
+      プログラムが終了したら，サーボを切って置く．{\bf 地味だがとても大事}
+  }\end{enumerate}
+}\end{enumerate}
+\end{screen}
+{\bf 課題2以降でも使う基本的なサンプルであるし，とても短いので，ソースを開いて理解しよう．}
+%$
+%%
+%%
+\subsubsection{vision-lib.l}
+さて，最後に画像処理をノートPC側で行うサンプルを紹介しよう．
+先ほどvision-viewerのところで，少しだけ実装を紹介している部分で出てきた，
+{\bf robot-programming/client/vision-viewer/visionlib.c}の中で定義された
+関数を改めて見てみよう．
+\begin{itemize}
+\item {\bf init\_vision}\\
+  OpenCVでの画像表示やキャプチャに必要な画像インスタンスや
+  表示用窓インスタンスの生成といった初期手続きの実行
+\item {\bf proc\_vision}\\
+  ソケット通信から画像データを読み込み，OpenCVの画像インスタンスへのコピーを行い，
+  画像表示用窓インスタンスに対し，表示指令を送る．
+\item {\bf proc\_jpg\_vision}\\
+  ソケット通信からjpg圧縮された画像データを読み込み，cvDecodeImageを使ってjpg画像を
+　OpenCVの画像インスタンスへのコピーし，画像表示用窓インスタンスに対し，表示指令を送る．
+\item {\bf quit\_vision}\\
+  生成したインスタンスの終了処理を行う．
+\item {\bf init\_facedetect}\\
+  顔認識に必要なデータのロード，認識結果表示用窓インスタンスの生成
+\item {\bf detect\_and\_draw}\\
+  OpenCVの画像インスタンスに対して顔認識処理を行い，顔がある場合は，
+  顔領域を表示窓に表示する．また，顔が発見された場合，画像水平方向の位置座標を
+  返す．見つからない場合は-1を返す．
+\end{itemize}
+といった関数があることがわかる．
+vision-viewerでは，これらのうち，init\_vision関数をまず呼び出し，ループの中で
+proc\_vision関数を毎回呼ぶことで，画像サーバからのデータを表示していた，
+というわけである．
+
+さて，EusLispにはこのようなC言語で記述されてコンパイルされた実行関数をロードして
+実行する{\bf 多言語インタフェース}が用意されている．詳しくは今週以降のソフトウェア第三
+で岡田先生が教えて下さるはずである．
+このような，多言語インタフェース機能を使えば，visionlib.c内で記述された顔認識
+処理関数の結果をEusLispで記述したクライアントプログラムから簡単に取得できる．
+実際に
+{\bf robot-programming/client/eus-client/vision-lib.l}がサンプルプログラムなので
+やってみよう．
+
+{\small
+\begin{itembox}[|]{{\bf チェックポイント6: EusLispクライアントからノートPCでの顔認識処理結果を取得する例}}
+ \vspace{-2mm}
+  \begin{verbatim}
+     vision-serverが既にshlinux上で立ち上がっているとして，
+　　 irteusglをemacsのshellで起動する．
+   irteusgl $ (cd "~/prog/jsk-enshu/robot-programming/client/eus-client")
+     eus-clientディレクトリへ移動
+   irteusgl $ (load "vision-lib.l")
+    とすると，
+     (connect-robot-server)
+     (connect-vision-server)
+     (test-eus-vision)
+    というメッセージが返ってくる．
+　　ここで，上の二つは，vision-lib.lの中で(load "robot-client.l")
+    していて，ロードすると自動で出てくるメッセージなので気にしない．
+ 
+    ここでは，(test-eus-vision)と打って実行すればいい．
+  irteusgl $ (test-eus-vision)
+　　画像表示の窓が3つ開くともに，irteusglのシェル上に処理結果が
+　　更新されていくはずである．
+　　画像窓の一つは，カメラ画像そのまま，一つは処理結果後，一つは顔認識結果
+　　である．顔が発見されると画像窓に赤丸が付き，irteusglのシェル上にfacepos
+　　という結果に値が入っているのを確認しよう．
+
+    ただし，jpgvision-serverを使っている人はこのままではうまくいかない．
+    (test-eus-vision :jpg t)
+    とするとjpeg圧縮に対応した顔認識プログラムが起動するのでやってみよう．
+  \end{verbatim}
+ \vspace{-10mm}
+\end{itembox}
+}
+%$
+
+なお，vision-lib.lの中の頭部分に，呼び出すvisionlib.cの関数の共有オブジェクト
+があるパスを指定する必要があるため，{\bf jsk-enshuディレクトリを，
+\~/prog以下においていない人}は正しくパスを書き換えてから，もう一度実行する必要があることに
+注意しよう．
+うまくいけば，\figref{facedetect}のようになるはずである．
+\begin{figure}[!htbp]
+\begin{center}
+  \includegraphics[scale=0.3]{./fig/facedetect.jpg}
+  \caption{vision-lib.lの(test-eus-vision)の実行結果の様子}
+  \label{fig:facedetect}
+\end{center}
+\vspace{-5mm}
+\end{figure}
+
+簡単に，vision-lib.lの中身を説明しておく．
+defforeignとあるのが外部言語で定義された関数をEusLispから呼び出せるようにする関数である．
+defforeignの第一引数は，EusLisp上でのC言語関数を呼び出す関数名(init-visionやproc-vision)
+であり，第二引数は，共有オブジェクト(ここでは*vision-so*)，第三引数が
+先ほど上で説明した，C言語での関数名(init\_visionだとかproc\_vision)，第四引数が，
+C言語で記述された関数の取る引数の型，最後がC言語で記述された関数の返り値の型，
+となっている．
+とりあえず，EusLispの中で，(proc-vision)と実行すると，C言語のproc\_visionが実行される，
+と思ってしまって構わない．
+
+test-eus-visionが，このサンプルプログラムの中で実行する関数であり，
+最初にOpenCVの初期手続きである(init-cap)関数を実行し(元はC言語のinit\_vision関数)，
+顔認識処理の初期手続きである(init-facedetect)を実行した後，
+do-until-keyで記述された部分が周期実行される．
+周期実行の中身は，(proc-vision)と(face-pos)であり，これによりソケット通信越しで
+画像データが表示されると供に，顔画像結果の位置がformat文によって表示される，
+という風になっている．
+%------------------------------------------------------------------------------
+\section{ジョイスティックによるアーム制御クライアント}
+\seclabel{joystick}
+ここでは，ノートＰＣに接続したUSBジョイスティック(コントローラ)の入力を，
+EusLispで受け取り，ロボット台車をコントロールするサンプルを紹介しよう．
+先ほど説明したvision-lib.lと同様に，まずジョイスティックの入力を受け取る
+C言語の関数をEusLispの多言語インタフェース機能を呼び出すことで実現している．
+
+さて，使い方を見てみよう．
+各班一人ずつ，USBジョイスティックコントローラをTAの人から貰ってこよう．
+もしかすると全班分はないかもしれないので，その場合は二班で共有しながらうまく使うなど
+して欲しい．
+\begin{itembox}[|]{{\bf チェックポイント7: ノートＰＣでのジョイスティックの動作確認}}
+\begin{enumerate}{\itemsep=-4pt
+  \item {\bf ノートPCでのデバイス認識の確認}\\
+    USBコントローラを接続し，\\
+    {\bf \$ ls /dev/input/js0}  \\
+    が見えるようになれば，認識は成功している．
+  \item {\bf USBジョイスティックのボタン状態取得関数ライブラリのコンパイル}\\
+    C言語で記述したジョイスティックライブラリをコンパイルする．Ubuntu端末から\\
+    {\bf \$ cd \~/prog/jsk-enshu/robot-programming/driver/joystick}\\
+    {\bf \$ make}\\
+    とするとコンパイルされる．joy.soがジョイスティックライブラリとなる．\\
+    {\bf \$ ./joy-main}\\
+    とすると，joy-soを使ったCの実行プログラムが走る．ボタンに合わせて表示が変わるはずである．
+}\end{enumerate}
+\end{itembox}
+%
+次に，EusLispからJoystickの情報を貰って，実機台車を操縦してみよう．
+{\bf robot-programming/eus-client/joystick-sample.l}がサンプルプログラムとなる．
+\begin{itembox}[|]{{\bf チェックポイント8: USBコントローラを用いたEusLisp操縦サンプル}}
+  移動台車実機を動かすので，{\bf shlinuxでロボットサーバが起動している状態で実行}すること．\\
+  その状態で，ノートPC上Linuxで以下を実行しよう．\\
+  \$ cd ~/prog/jsk-enshu/robot-programming/client/eus-client\\
+  \$ irteusgl\\
+  irteusgl\$ (load "joystick-sample.l")\\
+  　　これがサンプル本体である．全部で57行のシンプルなソースである．\\
+  irteusgl\$ (init-joystick)\\
+  　　ジョイスティックアクセスのための初期化と，ロボットサーバとの接続が行われる．\\
+  irteusgl\$ (start-joystick-control)\\
+　　  とすると，台車を動かしたり，腕を動かせるようになる．\\
+　　  ソースコードの中のdo-until-keyの中のループ処理を見るとわかるが，\\
+　　   axisという変数に，左のジョイスティックのアナログ入力が，\\
+　　   btnという変数に，ボタンの状態ベクトルが入っている．（押されていると1)\\
+　　   cond文で押されているボタンによって台車を動かしたり，腕を動かしている\\
+　　　というシンプルな構造になっている．
+\end{itembox}
+実際にロボットが動いただろうか．台車の移動と腕の操作がコントローラで押すボタンに
+よって切り替えられるはずである．
+%%
+\section{本日の課題}
+
+各班で合計２００ポイント以上を獲得すること．
+
+班のメンバーで相談し役割分担や協力しながら効率よくポイントを稼いで欲し
+い．ただし，０ポイントのメンバーは認めない．
+
+
+\subsection{課題0: 10 Point}
+
+分からないこと，追加してほしい機能，見つけたバグ，作ってみたパッチ
+などをjsk-enshuのチケットシステムに登録するか，
+メーリングリストに投稿してみよう
+
+分からないことがたくさんある人は，何度も投稿すればよい．
+その回数分だけポイントを進呈する．
+
+\subsection{課題1:30 Point}
+
+第一回と同じように，\secref{vision}，\secref{joystick}中のチェックポイントを
+こなし，それぞれがシステム図中のどのあたりで実行されているかを意識しながら
+動かし方を理解し，以降の課題に役立てよ．
+前回同様，TAが以下のような理解度確認質問を行うので，それに各自答えられる
+ことを以って，課題1のチェックとする．
+\begin{itemize}
+\item vision-serverは何個立ち上げられるか
+\item vision-serverはどこでコンパイルしているか
+\item 赤色抽出処理はserver/clientどちらで行っているか
+\item 顔認識処理はserver/clientどちらで行っているか
+\item チェックポイントの中で，多言語インタフェースを使っているEusLispの行動サンプルはどれか
+\end{itemize}
+
+班のメンバー全員がいずれかの質問に答えること．
+%%
+\subsection{課題2: 30 Point}
+\secref{vision}の中で使っていたvision-serverは，決められた一定の赤色閾値
+の重心座標を返すだけであり，行動プログラムを構築していくにはいささか不便である．
+そこで，ソケット通信を介してクライアント側から色閾値をセットするインタフェースや，
+重心位置だけでなく，面積を返すように機能を追加したのが，
+{\bf vision-server2}である．
+
+vision-server2で追加された機能を用いたEusLispのクライアント行動プログラムを記述し，
+実行している様子をTAに見せよ．
+
+例えば，
+見える面積に応じて腕を動かす，台車を前後させる．
+赤色が見えた場合は腕を動かし，青色が見えた場合は車輪を動かす．
+などが考えられる．
+
+{\bf vision-server2周りの機能の使い方については，付録に載せてある}ので，
+それを参照して欲しい．ヒントとしては，以下のようなものだろうか．
+\begin{itemize}
+\item ヒント\\
+  \secref{vision-server2}における枠で囲まれた
+  4番目の，画像クライアントの起動の当たりを，今日の演習資料のsample-vision.l周り
+  (チェックポイント4,5当たり)を見比べてみると光明が見えてくるかもしれない
+\item さらにヒント\\
+色閾値の値について自分で調整するのが面倒だったら，
+jsk-enshu/robot-programming/client/eus-client/robot-client2.l
+の中を最初の方を見ると...おや，blue，red，greenという文字が，これは6次元のベクトルに
+なっているわけだから.. まあ調整は必要なのですが，閾値の最初のスタートとしてはいいのでは？
+\item 大きなお世話かもだけどヒント\\
+閾値の設定をしているときなど，閾値処理した結果が
+実際にどうなっているかを確かめながらやっていないと話にならない．
+EusLispのresultの結果を眺めるだけでなく，是非vision-viewerを起動し，処理画像を
+目で見ながら，EusLispのコマンドラインで，\\
+　 irteusgl \$ (send *vs* :color-threshold \#f(hoge hoge ..))\\
+と打ちながら，対話的に閾値を調整してみてもらいたい．
+ほら，インタプリタな環境は便利かもしれない，と思い始めたでしょ？
+\end{itemize}
+%%
+\subsection{課題3: 30 Point}
+顔の位置に応じて，実機台車の挙動が変わるEusLispの行動プログラムを記述し，
+TAに見せよ．\\
+ヒント: \secref{vision}で説明したsample-vision.lとvision-lib.lを組み合わせると，
+いいのではないだろうか．vision-lib.lのdo-until-keyでface-posを貰っているわけだから，
+後はface-posに応じて，ロボットを動かすように書けばいい．
+%%
+\subsection{課題4: 30 Point}
+USBコントローラの入力によって，台車を操縦することで，地面に置いた丸い玉を
+拾って見せよ．長くても30秒程度で気軽に拾える完成度を期待する．
+操縦士が巧みであれば\secref{joystick}のチェックポイント8で実行した
+(start-joystick-control)をそのまま使っても成功する可能性はあるが，
+この方法では腕をうまく操縦することができないと思われる．
+
+ヒント：腕の逆運動学のサンプルjsk-enshu/robot-programming/eus/daisya-ik.l
+を参考にしながら，腕を動かす場合は，USBジョイスティックの値によって，
+腕の関節ではなく手先を修正するように変更し，修正された手先位置を
+台車アームの逆運動学を解いて求まる各関節角度を送ることで腕を操縦するように
+してみると良い．daisya-ik.lとjoystick-sample.lを融合させれば良いわけである．
+より詳細なヒントは付録\secref{daisya-ik}に説明してあるので，良くわからなければ
+読んでみて欲しい．
+%%
+\subsection{アドバンスド課題: 50 Point}
+vision-serverやvision-server2において色抽出を行う際に，
+違う物体で似た色が視野画像に入っていると，色重心座標が複数物体全体の
+重心になって出力され，全く物体がない部分を見てしまう，ということがある
+かもしれない．
+
+こうしたことを防ぐには，色抽出された結果を，連続した一定の領域ごとに区別し，
+それぞれに対して重心座標を求める，という処理が必要になってくる．
+画像処理ではこうした処理のことをラベリングと呼ぶ．
+本演習でも，ラベリング機能を有する画像サーバとして，vision-server3が用意
+されているので是非，使ってみよう．\figref{labeling}は実際にvision-server3
+でラベリングした処理結果をvision-viewerで表示したものである．色抽出は
+青色に調整した様子をキャプチャしたものである．
+\begin{figure}[!htbp]
+\begin{center}
+  \includegraphics[scale=.3]{./fig/labeling.jpg}
+  \caption{vision-server3のラベリング処理結果をvision-viewerで表示した様子}
+  \label{fig:labeling}
+\end{center}
+\vspace{-5mm}
+\end{figure}
+なお，vision-server3については，\secref{vision-server3}に載せたので，
+読んでみよう．
+このように，vision-serverは機能を段々追加していき，最終的にはvision-server3まで
+用意されている．{\bf jpgvision-serverはこのvision-server3にさらにjpg圧縮機能を持たせたものである，
+という理解をしてくれて問題ない．}
+
+\subsection{アドバンスド課題: 100 Point}
+TAに赤色のテープを地面に貼ってもらいライントレーサのようなことをやってみよ．
+あるいは，テープで標識（矢印等）をつくり，USBカメラで処理を行い，標識通りに
+ロボット台車が動いていく行動プログラムを作ってみよ．
+
+\subsection{アドバンスド課題: 100 Point}
+顔認識以外にも，今まで他の演習で習った画像処理プログラムをvisionlib.cに記述し，
+EusLispの多言語インタフェースで呼び出して処理結果を取得し，
+何らかの行動に寄与させるEusLispの行動サンプルプログラムを書いてみよ．
+
+\subsection{特別課題: 1000 Point}
+台車もそろそろガタが来ている班も多いかもしれない．修理を経験した班は
+修理内容や苦労した点，どのように修理をしたか，ということも非常に重要な経験である，
+と私は思う．
+そのような場合，TAに自分たちがどのような修理をしたか，どうすれば修理できるかが
+わかったかを説明せよ．
+なお，特別課題を行うために敢えて台車を壊したりはしないように．
+%%----------------------------------------------------------------------------
+
+\clearpage
+付録
+\appendix
+\section{robot-client.lにおける画像サーバ(robot-server)アクセスに関するメソッド}
+  robot-programming/client/eus-client/robot-client.lについてvision-serverに関するものについて
+　説明する．robot-serverに関するものも含まれているが，それについては前回資料において説明を行った．
+  ここでは，SH台車で上がっているサーバから情報を取得したり命令を送信するための
+  クラスファイルが定義されている．irteusglを起動した状態で，
+  （ただし，vision-serverが台車であがっているとして)
+\begin{screen}
+  \begin{verbatim}
+　　irteusgl $(connect-robot-server :host host)
+     ただし、hostには "192.168.x.y" のような台車IPを""でくくったものをいれること
+     vision-serverアクセスへのインスタンス *vs* ができる．
+     引数を与えない場合は，デフォルトで，robot-client.lの最初に設定した
+　　 台車IPへアクセスするようになっている
+   irteusgl $ (setq hoge (connect-vision-server)) 
+     のように好きな変数にバインドしても良い．
+  \end{verbatim}
+\end{screen}
+  サーバに命令を送るには，*vs*に対してメソッドを送ればよい．
+　以下に簡単に実装されているメソッド例を紹介する．\\
+{\bf [vision-serverへの指令]}
+\begin{itemize}{\itemsep=-4pt
+  \item 処理結果の取得 {\bf result}\\
+    robot-programming/server/vision-server/vision-server.c
+    の interpreter関数内で定義した仕様の結果がかえって来る。
+    演習初期状態では、おそらく赤色抽出した結果の重心座標がかえってくる．\\
+    (send *vs* :result)\\
+    とすると、
+    ((:centroid \verb+#+f(100 200))) \\
+   のようなデータがかえって来るはずである。
+   今後，各自、適宜vision-server内の仕様を変えて、好きなデータをとってきてみるように変更する
+   こともできる．
+   たとえば、面積も計算できるようにして、
+    ((:centroid \verb+#+f(100 200)) (:area 200))\\
+   のような結果がかえって来るようになっていれば、行動プログラムの幅が広がりますよね？
+}\end{itemize}
+%%
+\section{機能追加した画像サーバ(vision-server2)の使い方}
+\seclabel{vision-server2}
+今回の演習で説明してきた画像サーバクライアントシステムは，
+画像処理サーバ側で赤色抽出及びその重心計算を行い，
+行動クライアント側は，その結果をresultコマンドで取得する，
+という非常にシンプルなものであった．
+しかし，これだけでは赤い物にしか反応しないし，重心位置だけでなく
+%% 赤色物体の面積が知りたい人も多かっただろう．
+%% 実際，前回のシミュレータ環境での行動プログラムで自主的に赤色物体の
+%% 画像サイズを取得できるように改造し，行動に幅を持たせるといった人
+%%も何人かいたようである．
+そこで
+\begin{itemize}{\itemsep=-4pt
+\item {\bf 画像処理結果として重心だけでなく面積も返すにはどうするか}
+\item {\bf クライアントからの色抽出閾値の変更をするためにはどうするか}
+}\end{itemize}について説明していく．
+{\bf vision-server2.c及びrobot-client2.l}が
+この変更に対応した新たな画像サーバ及びEusLispクライアントプログラムである．
+以下を実行して確かめよ．
+\begin{enumerate}{\itemsep=-4pt
+  \item {\bf 画像サーバのcompile}\\
+    {\bf Ubuntuの画面}で
+    \begin{screen}
+    \vspace{-3mm}
+    \begin{verbatim}
+    $ cd ~/prog/jsk-enshu/robot-programming/server/vision-server
+    $ make
+      コンパイル
+    $ make copy
+      台車shlinuxへのコピーが始まるので，移動台車とUbuntu端末が通信できる
+      状態（sshログインできる状態)にしてから実行すること
+    \end{verbatim}
+    \vspace{-10mm}
+    \end{screen}
+  \item {\bf 画像サーバの起動}\\
+    {\bf 台車shlinux}で
+    \begin{screen}
+    \vspace{-2mm}
+    \begin{verbatim}
+    $ cd ~/prog/jsk-enshu/robot-programming/server/vision-server
+    $ ./vision-server2
+      USBカメラを移動台車につけておくこと．うまくいかない場合は，
+      /dev/video0があるか，抜き差ししてもない場合はshlinuxを再起動せよ
+     (vision-serverのときと同じ)
+    \end{verbatim}
+    \vspace{-10mm}
+    \end{screen}
+  \item {\bf 画像ビューアの起動}\\
+    Ubuntu端末で，ビューアを起動する
+    \begin{screen}
+    \vspace{-2mm}
+    \begin{verbatim}
+    $ cd ~/prog/jsk-enshu/robot-programming/client/vision-viewer
+    $ ./vision-viewer
+      実行ファイルがない場合はmakeすればよい
+      vision-viewerはvision-serverでもvision-server2でもどちらでも
+      繋ぐことができる．
+      (ただしjpgvision-serverを使う場合は，jpgvision-viewerを使うこと)
+    \end{verbatim}
+    \vspace{-10mm}
+    \end{screen}
+  \item {\bf 画像クライアント（EusLisp)の起動}\\
+    Ubuntu端末でemacsを上げて，shellからirteusglを起動する．
+    \begin{screen}
+    \vspace{-2mm}
+    \begin{verbatim}
+    $ cd ~/prog/jsk-enshu/robot-programming/client/eus-client
+    $ irteusgl
+    irteusgl $ (load "robot-clent2.l")
+      必要な関数をロード
+    irteusgl $ (connect-vision-server)
+　　　サーバと接続
+    irteusgl $ (send *vs* :result)
+      結果の取得 ((:centroid #f(hoge hoge)) (:area uge))
+      のような結果が返ってくるはずである．
+　　　:areaの横にあるデータが面積となる．
+　　　赤いものを近づけると大きくなることを確かめてみよ.
+      viewerの表示にも書いてあるはずである．
+    irteusgl $ (send *vs* :color-threshold #f(0 100 0 100 0 100))  
+      色抽出の閾値の変更．赤min，赤max，緑min，緑max，青min，青max，
+　　　の6要素を送る．0~255の間の数値を送ること．
+      変更することで，ビューアの処理画面が変化することを確かめよ
+    \end{verbatim}
+    \vspace{-10mm}
+    \end{screen}
+}\end{enumerate}
+
+さて，実装はどのようになっているかを大まかに確認しておこう．
+\subsection{面積の取得及びresultコマンドに対するクライアントへの送信}
+robot-programming/server/vision-server/vision-server2.c
+をemacsで開いてvision-server.cと比較しながら中身を見てみよう．
+\begin{itemize}{\itemsep=-4pt
+  \item {\bf 画像処理関数 calcCentroid}
+    \begin{screen}
+      \vspace{-2mm}
+      vision-server.cではただ重心計算をしているだけだが，vision-server2.c
+      では面積を計算し，大域変数areaに値を代入している
+    \end{screen}
+  \item {\bf コマンド解釈関数 interpreterのresult部}
+    \begin{screen}
+      \vspace{-2mm}
+    else if(strcmp(com, "result")\\
+    となっている部分の中身で，{\bf centroidだけでなく area}を文字列として
+    加え，ソケット通信でwriteを使ってクライアントに送り返している．
+    \end{screen}
+}\end{itemize}
+これらの変更により，クライアント側からresultコマンドを送ると新たに画像面積
+データが取得できるようになる．
+すなわち，新たな画像情報を取得できるように改造する場合は，
+vision-server側だけを修正すればよい．{\bf クライアントは等しくresultコマンドを
+送ればよい}のである．
+%%
+\subsection{クライアント側からの閾値修正}
+robot-programming/server/vision-server/vision-server2.c
+をemacsで開いてvision-server.cと比較しながら中身を見てみよう．
+\begin{itemize}{\itemsep=-4pt
+  \item {\bf 閾値変数 \verb+rgb_thre[6]+}
+    \begin{screen}
+      \vspace{-2mm}
+      vision-server.cでは局所変数だが，vision-server2.cでは
+      interpreter関数からも変更できるように大域変数として定義している．
+    \end{screen}
+  \item {\bf コマンド解釈関数 interpreterの部}
+    \begin{screen}
+      \vspace{-2mm}
+    vision-server.cには存在しない\\
+    {\bf else if(strcmp(com, "color-threshold")}\\
+    という部分を追加し，新たな設定コマンドを追加している．
+    \verb+read_token+という関数を使うことで，ソケットからのポインタを
+    空白ごとに指定したtokenで変数(ここでは\verb+rgb_thre+)に代入できる．
+    必ず閾値が6変数くることを仮定して，ソケットからの文字列を読み込んでいる．
+    \end{screen}
+}\end{itemize}
+さて，これでサーバ側の用意はできたが，この場合はクライアント側にも新たに
+閾値設定コマンド({\bf color-threshold})を追加してやる必要がある．
+robot-programming/client/eus-client/robot-client2.l
+を見てみよう．
+ここでは新たにvision-clientに追加するメソッド(:color-threshold)だけ，
+robot-client2.lに書き足してやっている．もちろん，
+robot-client.lのvision-client.lの中に，追加してやってもよい．
+\begin{screen}
+  \vspace{-2mm}
+:color-thresholdの中身は何をしているかというと，
+引数cthre-vectorには，6次元のベクトルが来ると仮定していて，
+comという文字列変数に対して，6次元のベクトルの要素を追加していき，
+最終的に，"color-threshold rmin rmax gmin gmax bin bmax"
+という文字列をソケットで送信している．
+これは，前述したサーバ側のプロトコルに対応していることがわかるだろうか．
+\end{screen}
+
+ここまでがわかれば，自分の好きなようにサーバクライアントに機能を
+追加していけることができるのでやってみて欲しい．
+
+\section{台車アームの逆運動学サンプルプログラム}
+\seclabel{daisya-ik}
+何人もの先生から講義や演習でロボットの逆運動学について習ってきたと思うので
+ここでは，逆運動学についての説明は省略する．
+簡単にいうと，手先を動かすために必要な関節角を求めることが逆運動学である．
+
+Euslispによって実装した移動台車モデルにも逆運動学を解く機能\footnote{
+Jacobianによる収束計算に基づく逆運動学を使っている．
+}が用意されているため行動生成や操縦などに是非使ってみて欲しい\footnote{
+もしかすると，ソフトウェア第三で既に説明を受けているかもしれないが．
+}．
+関節角を一つずつ入力するよりもずっと簡単である．
+ノートPCのLinux上で，
+\begin{screen}
+  \vspace{-2mm}
+  \begin{verbatim}
+  $ cd ~/prog/jsk-enshu/robot-programming/client/eus-client
+　$ irteusgl
+  irteusgl $ (load "daisya-ik")
+   とすると台車の逆運動学ができるviewerが立ち上がる．
+  irteusgl $ (ik-demo0)
+   とやってみよ．h,j,k,l,f,b,eなどキーボードを押してEnterを押すと
+   少しずつロボットの手先位置が更新されていくことがわかると思う．
+  \end{verbatim}
+  \vspace{-8mm}
+\end{screen}
+%$
+%irteusgl $ (ik-demo0 :use-wheel t)
+%とやってみると，腕だけでなく台車全体を使うようになる．
+
+このdaisya-ik.lをジョイスティックで実機を動かす\secref{joystick}の
+チェックポイント8のjoystick-sample.lと組み合わせると，
+対話的にシミュレータや実機のロボットの腕を動かすことができるはずである．
+例えば，操縦ループとしては以下のようなものが考えられる．
+\begin{screen}
+  \vspace{-2mm}
+  \begin{verbatim}
+    Step0. キー入力に従いgoal-endcoordsを修正(daisya-ikのまま)
+    Step1. *daisya*を使って逆運動学を解く(daisya-ikのまま)
+      (send *daisya* :solve-ik goal-endcoords うんぬんかんぬん)
+    Step2. connect-robot-server, connect-robotsim-server
+           を使ってできる *rs*や*rs-sim*に対して，*daisya*の姿勢を送る
+      (send *rs* :arm-angle-vector (send *daisya* :arm-angle-vector) time)
+    Step3. timeの間休む
+    Step0,1,2,3のループをまわす．
+  \end{verbatim}
+  \vspace{-8mm}
+\end{screen}
+%%
+%%
+\section{ラベリング機能を有するvision-server3}
+\seclabel{vision-server3}
+ここでいうLabeling処理とは，何らかの画像抽出をした処理画像
+の中で，塊になっている部分毎にラベル(ID)を付けることであり，
+これによって，例えば複数の抽出結果があった場合には，それぞれ
+の面積や重心位置が計算されるクライアント側にその情報が渡される．
+
+\begin{enumerate}{\itemsep=-4pt
+  \item {\bf 画像サーバのコンパイル}\\
+  サーバプログラムは移動台車で動くので，{\bf 移動台車がノートPCのUbuntuから
+  通信できる(sshでログインできる)状態にしておく}こと．
+  また，{\bf 画像サーバを起動できるのは一人だけ}である．
+  \begin{screen}
+    \vspace{-2mm}
+    \begin{verbatim}
+ $ cd ~/prog/jsk-enshu/robot-programming/server/vision-server
+ $ make
+　 クロスコンパイルされる．
+ $ make copy
+   と打つと，台車に実行ファイルがコピーされる．
+    \end{verbatim}
+    \vspace{-10mm}
+  \end{screen}
+  \item {\bf 画像サーバの起動}\\
+    Ubuntuの端末からsshで移動台車のログインして，そこでサーバプログラムを起動する．
+    今回起動するのは，{\bf vision-server3}である．{\bf 3であること}に注意！
+    なお，jpgvision-serverはjpg圧縮機能以外はvision-server3と同じであるので
+    vision-server3同様にして使うことが可能である．
+    \begin{screen}
+      \vspace{-2mm}
+      \begin{verbatim}
+ $ ssh root@192.168.x.y
+   移動台車にログイン
+ # cd ~/robot-programming/server/vision-server
+ # ./vision-server3
+  エラーで起動しない場合は，/dev/video0があるかを確認してみよう．
+  ない場合は，USBカメラが移動台車のshlinuxで認識されていないので，
+  shlinuxを再起動してみよう．
+      \end{verbatim}
+    \vspace{-10mm}
+%$
+  \end{screen}
+  \item {\bf 画像ビューアの起動}\\
+    画像処理結果の数値だけを眺めても画像処理は
+    デバッグが難しい．そこで今カメラがどのような画像を見ているか，
+    どのような処理結果になっているかを，を確認しながらデバッグすることが
+    重要である．
+    そのためのクライントツールが，画像ビューアなのであった．
+    {\bf 画像ビューアは複数人起動できるので積極的に利用しよう}．ただし処理が遅くなるので
+    最終的なデモ時には切るか，一人くらいにしておくのが良い．
+    \begin{screen}
+      \vspace{-2mm}
+      \begin{verbatim}
+   それぞれのノートＰＣ上で
+  $ cd ~/prog/jsk-enshu/robot-programming/client/vision-viewer
+  $ ./vision-viewer
+    画像サーバが起動しているならば，これで接続して画像ビューアが起動する．
+    もし実行ファイルがない場合は，makeしてコンパイルしてから実行すること．
+      \end{verbatim}
+      \vspace{-10mm}
+    \end{screen}
+  \item {\bf 行動感覚プログラムeuslispからの処理結果の取得，画像サーバパラメタ調整}\\
+    さて，実際にロボットを動かす場合には，画像サーバからの結果を取得してそれに
+    応じてプログラムを記述していくわけだが，今回新たに加わったパラメタ調整の仕方と
+    共に，使い方を簡単に復習しておこう．
+    \begin{screen}
+      \vspace{-4mm}
+    \begin{enumerate}{\itemsep=-4pt
+      \item {\bf euslispの起動}
+	\vspace{-4mm}
+	\begin{verbatim}
+   emacsを起動して，M-x shell
+  $ cd ~/prog/jsk-enshu/robot-programming/client/eus-client
+  $ irteusgl 
+	\end{verbatim}
+      \item {\bf 必要プログラムのload}
+	\vspace{-4mm}
+	\begin{verbatim}	
+   以下はirteusglのシェル上で実行
+ irteusgl$ (load "robot-client2.l")
+   loadするのは，2であることに注意．
+	\end{verbatim}
+%$
+      \item {\bf 画像サーバとのやり取りメソッドの利用}
+	\vspace{-4mm}
+	\begin{verbatim}	
+ irteusgl$ (connect-vision-server) ;;vision-serverと接続
+ irteusgl$ (send *vs* :result)     ;;画像処理結果の取得
+   ちなみに，Labeling結果が複数ある場合，
+    ((:centroid #f(x1 y1) #f(x2 y2) ..) (:area a1 a2 ..))
+   のようなリストが返ってくる．一個もない場合は，
+    ((:centroid) (:area))
+   が返ってくるはずである．
+　 従って，処理結果を一度変数resultにバインドしておいたとすると，
+    (setq result (send *vs* :result))
+　　(length (cadr (assoc :centroid result)))
+   とするとラベリング処理結果の個数がわかるし，
+   (elt (cadr (assoc :centroid result)) 0)
+   とすると処理結果の第一要素（一番面積の大きい画像）の重心位置が，
+   (elt (cadr (assoc :area result)) 0)
+　 とすると，そのときの面積が返ってくるわけである．
+ irteusgl$ (send *vs* :color-threshold #f(0 100 0 100 0 100))
+   抽出色閾値の調整．これを変更すれば，赤だったり青だったりにできる．
+   robot-client2.lの冒頭に色閾値の例を載せておいたので参考にして欲しい
+ irteusgl$ (send *vs* :displaylabel-num 2)
+   最大何個のラベリング結果を返すかどうかを設定できる．(defaultは4)
+ irteusgl$ (send *vs* :minimum-area-size 100)
+   ラベリング処理する最小の面積を設定できる．これをうまく調整すれば
+ 　ゴミやノイズのように小さい抽出結果を弾くことができる．
+	\end{verbatim}
+%$
+    }\end{enumerate}
+    \end{screen}
+}\end{enumerate}
+
+\end{document}

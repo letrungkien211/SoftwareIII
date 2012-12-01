@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/driver/pc104driver
+END
+pc104driver.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/pc104driver/pc104driver.h
+END
+pc104driver.ko
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/driver/pc104driver/pc104driver.ko
+END
+zip.sh
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/pc104driver/zip.sh
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/jsk-enshu/!svn/ver/2/trunk/robot-programming/driver/pc104driver/Makefile
+END
+pc104ctrl.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/pc104driver/pc104ctrl.c
+END
+pc104ctrl_mt.c
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/pc104driver/pc104ctrl_mt.c
+END
+pc104ctrl.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/pc104driver/pc104ctrl.h
+END
+pc104ctrl_mt.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/pc104driver/pc104ctrl_mt.h
+END
+pc104driver.c
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/pc104driver/pc104driver.c
+END
+pc104driver.zip
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/driver/pc104driver/pc104driver.zip
+END

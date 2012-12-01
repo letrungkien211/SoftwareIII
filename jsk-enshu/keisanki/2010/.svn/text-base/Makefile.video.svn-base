@@ -1,0 +1,24 @@
+##
+## makefile for video_chat program
+##
+
+CC	= gcc
+CFLAGS	= -g -O2 `pkg-config gtk+-2.0 gthread-2.0 opencv --cflags`
+LDFLAGS	= -lpthread `pkg-config gtk+-2.0 gthread-2.0 opencv --libs`
+
+.c.o:
+	${CC} -c ${CFLAGS} $<
+
+all: video_chat_client video_chat_server video_saver
+
+video_chat_client: video_chat_client.o
+	${CC} -o $@ $^ ${LDFLAGS}
+
+video_chat_server: video_chat_server.o
+	${CC} -o $@ $^ ${LDFLAGS}
+
+video_saver: video_saver.o
+	${CC} -o $@ $^ ${LDFLAGS}
+
+clean:
+	rm video_chat_client video_chat_server *.o *~

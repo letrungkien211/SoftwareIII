@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/jsk-enshu/!svn/ver/94/trunk/robot-programming/client/vision-viewer
+END
+visionlib.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svnroot/jsk-enshu/!svn/ver/66/trunk/robot-programming/client/vision-viewer/visionlib.h
+END
+cog_eus.c
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/jsk-enshu/!svn/ver/94/trunk/robot-programming/client/vision-viewer/cog_eus.c
+END
+vision-viewer.c
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svnroot/jsk-enshu/!svn/ver/39/trunk/robot-programming/client/vision-viewer/vision-viewer.c
+END
+facedetect.c
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svnroot/jsk-enshu/!svn/ver/66/trunk/robot-programming/client/vision-viewer/facedetect.c
+END
+jpgvision-viewer.c
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svnroot/jsk-enshu/!svn/ver/51/trunk/robot-programming/client/vision-viewer/jpgvision-viewer.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/jsk-enshu/!svn/ver/92/trunk/robot-programming/client/vision-viewer/Makefile
+END
+visionlib.c
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svnroot/jsk-enshu/!svn/ver/93/trunk/robot-programming/client/vision-viewer/visionlib.c
+END

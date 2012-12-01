@@ -1,0 +1,11 @@
+%
+% document data for the pdf, output from dvipdfm
+%
+\catcode`\@=0
+@catcode`@\=12
+@def@PDFTITLE{}
+@def@PDFSUBJECT{}
+@def@PDFAUTHOR{}
+@def@PDFKEYWORDS{}
+@catcode`@\=0
+\catcode`\@=12

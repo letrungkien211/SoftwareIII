@@ -1,0 +1,131 @@
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010
+END
+Makefile.video
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/Makefile.video
+END
+capture.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/capture.c
+END
+video_chat_client.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/video_chat_client.c
+END
+Makefile.camera1
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/Makefile.camera1
+END
+videocapture_mmap.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/videocapture_mmap.c
+END
+Makefile.camera2
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/Makefile.camera2
+END
+video_saver.c
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/video_saver.c
+END
+detect_faces.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/detect_faces.c
+END
+capture_facedetect.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/capture_facedetect.c
+END
+capture_threshold.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/capture_threshold.c
+END
+enshu-lec.sty
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/enshu-lec.sty
+END
+20100611-enshu-device.tex
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/20100611-enshu-device.tex
+END
+defs.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/defs.h
+END
+capture_edge.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/capture_edge.c
+END
+20100714-enshu-device.tex
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/20100714-enshu-device.tex
+END
+videocapture.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/videocapture.c
+END
+video_chat_server.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/video_chat_server.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/Makefile
+END
+to-jis.sh
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/to-jis.sh
+END
+lenna.png
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/lenna.png
+END
+videocapture.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/jsk-enshu/!svn/ver/41/trunk/keisanki/2010/videocapture.h
+END

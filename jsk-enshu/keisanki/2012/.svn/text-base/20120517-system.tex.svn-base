@@ -1,0 +1,124 @@
+\documentclass[a4j,twoside]{jarticle}
+
+\usepackage[dvipdfm]{graphicx}
+\usepackage{array, amsmath, amssymb, ascmac, supertabular, moreverb, multicol}
+\usepackage[dvipdfm]{hyperref}
+%% \usepackage[dvipdfm]{xcolor}
+% \hypersetup{urlbordercolor={1 1 1}}
+% \hypersetup{bookmarksnumbered=true}
+% \hypersetup{linkcolor={0 0 0}}
+% \hypersetup{linkbordercolor={white white white}}
+% \hypersetup{colorlinks=false}
+\pagestyle{headings}
+
+%講義・演習配布資料用設定集
+\usepackage{enshu-lec}
+
+\title{2012年度 機械工学総合演習\\計算機演習 統合システム実践}
+
+\author{
+%担当：岡田 慧(k-okada@jsk.t.u-tokyo.ac.jp), \\
+%\url{http://www.jsk.t.u-tokyo.ac.jp/~k-okada/lecture/}\\
+}
+
+\date{
+%2012年5月16日/6月22日
+}
+\setlength{\columnseprule}{0.5pt}
+\setlength{\columnwidth}{.3\textwidth}
+\setlength{\columnsep}{1cm}
+
+\begin{document}
+\maketitle
+
+\section{はじめに}
+
+これまでコンピュータグラフィックス，実世界画像処理，並列ネットワーク計
+算の演習で学んだ内容を復習する時間として統合システム実践を設けた．演習
+の理解内容に応じて以下にA、B、Cの3つの課題を用意しので１つ選ぶこと．もちろんすべての課題をこな
+しても良い．以下の項目をレポートにまとめ統合システム実践の最終日に提出せよ．
+
+\begin{excersize}{課題A}
+これまでの演習内容をより深く理解したい者は，各回の演習の課題をやり直し
+てもよい．その際には以下の要領で理解を深め，各課題のソースコードと以下
+のレポートを提出せよ．
+ \begin{enumerate}
+  \item 演習時間中に終わらなかった課題，十分に理解できなかった課題に取
+    り組め．
+  \item 自分の書いたプログラムにコメントを入れよ．特にデータ構造，関数
+    の引数，制御構造(if文,for文等）の条件の意味は読んでいる者に伝わる
+      よう丁寧に書いてみよ．
+  \item プログラムのフローチャートを書いてみよ．
+  \item プログラムのデータ構造，並びにアルゴリズムが分かるような構成図
+    を記せ．構成図には定形の書き方はないので，各自工夫してみよ．（ヒン
+      ト：データの流れと制御の流れをそれぞれ別の矢印で，情報と処理をそ
+      れぞれ別の枠で表現するとよい）
+ \end{enumerate}
+\end{excersize}
+
+\begin{excersize}{課題B}
+これまでの演習内容をより理解しつつ応用プログラム課題を書いてみたい物は
+video\_chat\_server.c, video\_chat\_client.c を参考にプログラムを発
+展させてみよ．例題として以下を挙げるがこれ以外でもよい．
+ \begin{enumerate}
+  \item 画像処理の結果（人が見つかった，動きがある，特定のマークが発見
+    された等）に応じて，表示される画像のエフェクト（色の反転，エッジ処
+    理，モザイク化等）が変わるようにせよ．
+  \item 画面の中に立方体を表示しそこに画像を表示せよ．視点をマウスで操
+    作出きるようにせよ
+  \item 立方体のそれぞれの面には別のカメラ入力の画像が表示されるように
+    せよ．
+  \item クライアント間でチャットが出きるようにせよ．チャットの内容は画
+    像上にテキストで流れるようにしてみよ．
+  \item エラー処理が不十分な部分があれば修正せよ．\newline
+
+また，自分が変更した部分について以下の説明をすること．
+
+  \item 自分の書いたプログラムにコメントを入れよ．特にデータ構造，関数
+    の引数，制御構造(if文,for文等）の条件の意味は読んでいる者に伝わる
+      よう丁寧に書いてみよ．
+  \item プログラムのフローチャートを書いてみよ．
+  \item プログラムのデータ構造，並びにアルゴリズムが分かるような構成図
+    を記せ．構成図には定形の書き方はないので，各自工夫してみよ．（ヒン
+      ト：データの流れと制御の流れをそれぞれ別の矢印で，情報と処理をそ
+      れぞれ別の枠で表現するとよい）
+ \end{enumerate}
+\end{excersize}
+
+\begin{excersize}{課題C}
+これまでの演習内容を踏まえて新しいプログラム課題を自らに課したいものは，
+各自の独創的なアイデアに基づいたアプリケーションを構想し，
+その構想をソフトウェアシステムとして実現せよ．演習で取り上げた
+コンピュータグラフィックス，実世界画像処
+理，並列ネットワーク計算の内容を2つ以上含む事が望ましいが，これらを理
+解した上で新しい内容に取り組むのもよい．
+開発したプログラムのソースコードと以下のレポートを提出せよ．
+ \begin{enumerate}
+  \item どのようなモチベーションでアプリケーションのアイデアを企画したかについて説明せよ．
+  \item そのアイデアをどのような技術を用いて実現しようとしたか，利用するライブラリ，関数，アルゴリズム等について説明せよ．
+  \item 自分の書いたプログラムにコメントを入れよ．特にデータ構造，関数
+    の引数，制御構造(if文,for文等）の条件の意味は読んでいる者に伝わる
+      よう丁寧に書いてみよ．
+  \item プログラムのフローチャートを書いてみよ．
+  \item プログラムのデータ構造，並びにアルゴリズムが分かるような構成図
+    を記せ．構成図には定形の書き方はないので，各自工夫してみよ．（ヒン
+      ト：データの流れと制御の流れをそれぞれ別の矢印で，情報と処理をそ
+      れぞれ別の枠で表現するとよい）
+ \end{enumerate}
+\end{excersize}
+
+{video\_chat\_server.c
+\scriptsize
+\listinginput[1]{1}{video_chat_server.c}
+}
+{video\_chat\_client.c
+\scriptsize
+\listinginput[1]{1}{video_chat_clinet.c}
+}
+{defs.h
+\scriptsize
+\listinginput[1]{1}{defs.h}
+}
+
+\end{document}
+

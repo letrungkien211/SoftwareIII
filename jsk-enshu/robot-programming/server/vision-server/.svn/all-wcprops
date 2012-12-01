@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/jsk-enshu/!svn/ver/89/trunk/robot-programming/server/vision-server
+END
+cog.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/jsk-enshu/!svn/ver/88/trunk/robot-programming/server/vision-server/cog.c
+END
+Makefile.sh4linux
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/server/vision-server/Makefile.sh4linux
+END
+vision-server.c
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svnroot/jsk-enshu/!svn/ver/76/trunk/robot-programming/server/vision-server/vision-server.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/jsk-enshu/!svn/ver/89/trunk/robot-programming/server/vision-server/Makefile
+END
+jpgvision-server.c
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svnroot/jsk-enshu/!svn/ver/77/trunk/robot-programming/server/vision-server/jpgvision-server.c
+END
+Makefile.pc
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/jsk-enshu/!svn/ver/1/trunk/robot-programming/server/vision-server/Makefile.pc
+END
+vision-server2.c
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svnroot/jsk-enshu/!svn/ver/34/trunk/robot-programming/server/vision-server/vision-server2.c
+END
+vision-server3.c
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svnroot/jsk-enshu/!svn/ver/34/trunk/robot-programming/server/vision-server/vision-server3.c
+END

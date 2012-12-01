@@ -1,0 +1,8 @@
+daisya-ik.l    : キーボード入力による
+                 (ik-demo0)
+daisya-hanoi.l : ハノイの塔を解くサンプル
+                 (hanoi-test)
+daisya-maze.l  : 迷路を解くプログラム
+                 (maze-init) (maze-demo 1 25 :extender #'depth-extender)
+daisya-qlearn.l: Q学習による迷路解決
+                 (maze-init)(maze-learn)(maze-demo)

@@ -1,0 +1,781 @@
+\documentclass[a4j,twoside]{jarticle}
+
+\usepackage[dvipdfm]{graphicx}
+\usepackage{array, amsmath, amssymb, ascmac, supertabular, moreverb, multicol}
+\usepackage[dvipdfm]{hyperref}
+%% \usepackage[dvipdfm]{xcolor}
+% \hypersetup{urlbordercolor={1 1 1}}
+% \hypersetup{bookmarksnumbered=true}
+% \hypersetup{linkcolor={0 0 0}}
+% \hypersetup{linkbordercolor={white white white}}
+% \hypersetup{colorlinks=false}
+\pagestyle{headings}
+
+%講義・演習配布資料用設定集
+\usepackage{enshu-lec}
+
+\title{2011年度 機械工学総合演習\\計算機演習9 応用OpenCV画像処理}
+
+\author{
+担当：岡田 慧(k-okada@jsk.t.u-tokyo.ac.jp)\\
+\url{http://www.jsk.t.u-tokyo.ac.jp/~k-okada/lecture/}\\
+}
+
+\date{2011年6月9日/7月11日}
+\setlength{\columnseprule}{0.5pt}
+\setlength{\columnwidth}{.3\textwidth}
+\setlength{\columnsep}{1cm}
+
+\begin{document}
+\maketitle
+
+\section{はじめに}
+
+本日は，画像処理ライブラリOpenCVを用いた計算機
+プログラミング演習を行い，ライブラリの使い方，画像処理アプリケーショ
+ン，画像ファイル，カメラデバイスの扱い方を実習する．
+
+\section{OpenCVを用いた画像処理プログラム}
+
+OpenCVは元々Intelの技術が始めたオープンソースの画像処理ライブラリであ
+り，現在はWillowGarage社がサポートしている．
+ホームページは\url{http://opencv.willowgarage.com/wiki/}にあり，
+\url{http://pr.willowgarage.com/wiki/OpenCVMeetingNotes}で日々の開発状
+況を知ることができる．
+
+また，日本語の各種情報は
+\url{http://opencv.jp/}
+を見るとよい．
+\url{http://opencv.jp/sample/}
+サンプルプログラムが数多く載っている．
+
+\subsection{画像の読み込みと表示}
+
+簡単な画像の読み込みと表示は以下のプログラムになる．
+
+{%\scriptsize
+\listinginput[1]{1}{sample1.c}
+}
+
+このファイルをsample1.cという名前で保存した場合，
+プログラムのコンパイルと実行は以下のようになる．画像ファイルは各自web
+等で見つけてきてほしい．
+
+\begin{verbatim}
+$  gcc -o sample1 sample1.c `pkg-config opencv --cflags` `pkg-config opencv --libs`
+$ ./sample1 画像ファイル
+\end{verbatim}
+
+pkg-config はインストールされているライブラリを用いたプログラムを開発
+するのに必要な情報を生成するプログラムであ
+る．\verb+pkg-config --list-all+とすると対応するライブラリの一覧が，
+\verb+pkg-config --help+とするとオプションの一覧を見ることが出来る．
+
+画像ファイルは例えば，OpenCVに付属のlena.jpgが画像処理分野では伝統的に
+利用されている．
+
+
+このファイルは
+https://code.ros.org/gf/project/opencv/scmsvn/?action=browse\&path=%2F%2Acheckout%2A%2Ftrunk%2Fopencv%2Fsamples%2Fc%2Flena.jpg
+からダウンロードできるが，googleでlena.jpg で調べればすぐに見つかるだ
+ろう．
+
+また，makeコマンドに慣れている物は，以下のMakefileを使うのが有効だろう．
+行頭空白はtabキーをつかって入力すること．以下のコードをMekfileという名
+前のファイルに打ち込み，\verb+make+と打てば良い．
+
+{%\scriptsize
+\listinginput[1]{1}{Makefile.sample1}
+}
+
+\begin{excersize}{課題1}
+ \begin{enumerate}
+  \item sample1.cプログラムを打ち込みコンパイル，実行してみよ．また，
+    実行した状態の画面をキャプチャせよ．画面のキャプチャは，キーボードの右上
+    にある\verb+PrtSc+キーや，\verb+Fn+PrtSc+で実行できる．
+ \end{enumerate}
+\end{excersize}
+
+\subsection{簡単な画像処理：エッジ抽出，二値化処理}
+
+OpenCVには様々な画像処理関数が用意されている．ここでは簡単な例として
+二値化処理，エッジ抽出，顔認識を行ってみよう．それぞれ別の名前でファイ
+ルをセーブしておくと良い．
+
+以下は二値化処理のサンプルプログラムである．
+{%\scriptsize
+\listinginput[1]{1}{sample2.c}
+}
+以下はエッジ抽出のサンプルプログラムである．
+{%\scriptsize
+\listinginput[1]{1}{sample3.c}
+}
+
+以下は顔認識のサンプルプログラムである．
+{%\scriptsize
+\listinginput[1]{1}{sample4.c}
+}
+
+
+\begin{excersize}{課題2}
+ \begin{enumerate}
+  \item 二値化処理，エッジ抽出，顔認識のそれぞれのプログラムを打ち込
+    み，コンパイル，実行せよ．また，実行画面をキャプチャして画像として
+    保存せよ．
+ \end{enumerate}
+\end{excersize}
+
+\subsection{カメラからの画像読み込みと表示}
+
+カメラデバイスからの画像読み込みと表示は以下のプログラムになる．
+{%\scriptsize
+\listinginput[1]{1}{sample5.c}
+}
+
+\begin{excersize}{課題3（TA確認）}
+ \begin{enumerate}
+  \item カメラから取り込んだ画像に対して二値化処理，エッジ抽出，顔認識
+    のいずれかの画像処理を適用するプログラムを書いてみよ．
+    実行画面をキャプチャして画像として保存せよ．
+  \item 余裕のある者は紹介した例以外の処理を用いた動画処理プログラムを
+    書いてみよ．実行画面をキャプチャして画像として保存せよ．
+ \end{enumerate}
+\end{excersize}
+
+\section{ピクセル操作}
+
+
+\subsection{コンピュータ上でのピクセルの取り扱い}
+
+
+コンピュータ上での画像の取り扱いは，
+画像を微小長方形領域（ピクセル＝画素という）に分割し，そのピクセ
+ル単位で処理を行う．
+通常のカメラ映像の場合は，例えば720 ＊ 480 や640 ＊ 480 
+のピクセルの集合となっている．
+
+グレー画像の場合，各画素には通常0 から255 の8bit のデジタルデータが入力
+される．通常は0 で黒，全ビットが1 で白となる．カラー画像の場合は，各画素
+には3 つの値がデジタルデータとして入力される．ふつう，RGB 表色系と呼ばれ
+る標準的なもので表されており，光の三原色の赤緑青のRGB がそれぞれ8bit の
+値をとる．RGB の三原色をコンピュータのメモリにどのように格納するかにはさ
+まざまな方法があるが，多くの場合，始めのバイトが左上角のB，次が左上角のG，
+その次が左上角のR で，さらにその次が一つ右隣のB，それから一つ右隣のG，一
+つ右隣のR というように入っている．この場合3 バイトごとに1 画素ずつが相当
+することになる．
+これと異なる場合として，例えばYUYV画像がありこれは次節で説明する．
+
+\begin{figure}[ht]
+\begin{minipage}{\linewidth}
+\begin{center}
+\includegraphics[width=.45\linewidth]{fig/why-is-vision-hard.jpg}
+\includegraphics[width=.45\linewidth]{fig/what-is-an-edge.jpg}
+\caption{
+\label{fig:grec}
+コンピュータ上での画像の取り扱い
+(\url{http://opencv.willowgarage.com/wiki/OpenCV_Talks}より)
+}
+\end{center}
+\end{minipage}
+\end{figure}
+
+
+\subsection{RGB画像とYUYV画像について}
+
+このカメラで取得できる画像のフォーマットはYUYV画像である．これは，
+各画素に対してRGBのそれぞれ1バイトづつ合計3バイトの情報が割り振られてい
+るのではなく，2画素に対して，明るさ情報2バイト，色情報2バイトが割り振ら
+れている．すなわち1画素に対する情報量は2バイトである．
+これは，明るさの変化に敏感だが，色の変化には鈍感である人の目の特性を
+利用し，色に比べて明るさ大してより多い情報を割り振っており，
+少ない損失で効率よくデータを伝送，保存することを目的としている．
+
+これを図示すると，YUYV画像フォーマットでは，4x4の画像をあらわすのに
+\begin{table}[ht]
+ \begin{center}
+  \begin{tabular}{|l|l|l|l|}
+\hline
+Y U & Y V & Y U & Y V \\ \hline
+Y U & Y V & Y U & Y V \\ \hline
+Y U & Y V & Y U & Y V \\ \hline
+Y U & Y V & Y U & Y V \\ \hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+のようなデータ配置となっている．
+また，Yの値の上限と下限は0と255であるが，
+U/Vに関しては-128から127となっている．
+
+ここから以下の変換式を用いてRGB画像を作り出している．
+OpenCVを用いるとこれらの処理をライブラリ関数のなかで処理してくれている．
+
+ \begin{verbatim}
+R = 1.00000Y + 1.40200V
+G = 1.00000Y - 0.71414V - 0.34414U
+B = 1.00000Y + 1.77200U
+ \end{verbatim}
+
+\subsection{OpenCVでの画素の直接操作}
+
+OpenCVの画像データである\verb+IplImage+は以下の様に定義されている．
+{\footnotesize
+ \begin{verbatim}
+typedef struct _IplImage
+{
+    int  nSize;             /* sizeof(IplImage) */
+    int  ID;                /* version (=0)*/
+    int  nChannels;         /* Most of OpenCV functions support 1,2,3
+    or 4 channels */
+    int  alphaChannel;      /* Ignored by OpenCV */
+    int  depth;             /* Pixel depth in bits: IPL_DEPTH_8U,
+    IPL_DEPTH_8S, IPL_DEPTH_16S,
+                               IPL_DEPTH_32S, IPL_DEPTH_32F and
+                               IPL_DEPTH_64F are supported.  */
+    char colorModel[4];     /* Ignored by OpenCV */
+    char channelSeq[4];     /* ditto */
+    int  dataOrder;         /* 0 - interleaved color channels, 1 - separate color channels.
+                               cvCreateImage can only create interleaved images */
+    int  origin;            /* 0 - top-left origin,
+                               1 - bottom-left origin (Windows bitmaps style).  */
+    int  align;             /* Alignment of image rows (4 or 8).
+                               OpenCV ignores it and uses widthStep instead.    */
+    int  width;             /* Image width in pixels.    */
+    int  height;            /* Image height in pixels.   */
+    struct _IplROI *roi;    /* Image ROI. If NULL, the whole image is selected. */
+    struct _IplImage *maskROI;      /* Must be NULL. */
+    void  *imageId;                 /* ``           `` */
+    struct _IplTileInfo *tileInfo;  /* ``           `` */
+    int  imageSize;         /* Image data size in bytes
+                               (==image->height*image->widthStep
+                               in case of interleaved data)*/
+    char *imageData;        /* Pointer to aligned image data.     */
+    int  widthStep;         /* Size of aligned image row in bytes.*/
+    int  BorderMode[4];     /* Ignored by OpenCV.    */
+    int  BorderConst[4];    /* Ditto.    */
+    char *imageDataOrigin;  /* Pointer to very origin of image data
+                               (not necessarily aligned) -
+                               needed for correct deallocation */
+}
+IplImage;
+ \end{verbatim}
+}
+
+以下はOpenCVの画像構造体から各画像ピクセルを直接操作するプログラムのサ
+ンプルである．
+
+{%\scriptsize
+\listinginput[1]{1}{sample6.c}
+}
+
+\begin{excersize}{課題4}
+ \begin{enumerate}
+  \item 直接画素を操作する方法で色画像をグレー画像にするプログラムを書いてみよ．
+  \item 余裕のある者は直接画素を操作する方法で二値化処理プログラムを書いてみよ．
+  \item さらに余裕のある者はRGB->YUVに変換し特定の色空間を抽出するプログラム
+    を書いてみよ．
+  \item これらのプログラムの実行画面をキャプチャして画像として保存せよ．
+ \end{enumerate}
+\end{excersize}
+
+\section{イベント処理}
+
+OpenCVでは簡単なイベント操作関数が用意されている．
+
+{\small
+ \begin{verbatim}
+
+cvCreateTrackbar
+
+トラックバーを作成して，指定されたウィンドウに追加する
+
+CV_EXTERN_C_FUNCPTR( void (*CvTrackbarCallback)(int pos) );
+
+int cvCreateTrackbar( const char* trackbar_name, const char* window_name,
+                      int* value, int count, CvTrackbarCallback on_change );
+
+trackbar_name
+    作成されるトラックバーの名前． 
+window_name
+    作成されるトラックバーの親として用いられるウィンドウの名前． 
+value
+    スライダの位置を表す，整数型変数のポインタ．作成時のスライダ位置
+    は，この変数によって定義される． 
+count
+    スライダの最大値．最小値は常に 0． 
+on_change
+    スライダの位置が変更されるたびに呼び出される関数のポインタ． この
+    関数のプロトタイプは，void Foo(int);となる． コールバックが不要の
+    場合は，NULL を指定する． 
+
+関数 cvCreateTrackbar は， 指定された名前と範囲のトラックバー（スライ
+  ダ，レンジコントロールとも呼ばれる）を作成する．この関数の引数には，
+トラックバーの位置に同期する変数と，トラックバーの位置変化に応じて呼び
+出されるコールバック関数を指定する．作成されたトラックバーは，与えられ
+たウィンドウの最上段に表示される．
+
+=======================================================================
+cvGetTrackbarPos
+
+トラックバーの位置を取得する
+
+int cvGetTrackbarPos( const char* trackbar_name, const char* window_name );
+
+trackbar_name
+    トラックバーの名前． 
+window_name
+    トラックバーの親ウィンドウの名前． 
+
+関数 cvGetTrackbarPos は，指定されたトラックバーの現在位置を返す．
+
+=======================================================================
+cvSetMouseCallback
+
+マウスイベントに対するコールバックを指定する
+
+#define CV_EVENT_MOUSEMOVE      0
+#define CV_EVENT_LBUTTONDOWN    1
+#define CV_EVENT_RBUTTONDOWN    2
+#define CV_EVENT_MBUTTONDOWN    3
+#define CV_EVENT_LBUTTONUP      4
+#define CV_EVENT_RBUTTONUP      5
+#define CV_EVENT_MBUTTONUP      6
+#define CV_EVENT_LBUTTONDBLCLK  7
+#define CV_EVENT_RBUTTONDBLCLK  8
+#define CV_EVENT_MBUTTONDBLCLK  9
+
+#define CV_EVENT_FLAG_LBUTTON   1
+#define CV_EVENT_FLAG_RBUTTON   2
+#define CV_EVENT_FLAG_MBUTTON   4
+#define CV_EVENT_FLAG_CTRLKEY   8
+#define CV_EVENT_FLAG_SHIFTKEY  16
+#define CV_EVENT_FLAG_ALTKEY    32
+
+CV_EXTERN_C_FUNCPTR( void (*CvMouseCallback )(int event, int x, int y,
+int flags, void* param) );
+
+void cvSetMouseCallback( const char* window_name, CvMouseCallback
+on_mouse, void* param=NULL );
+
+window_name
+    ウィンドウの名前． 
+on_mouse
+    指定されたウィンドウ内でマウスイベントが発生するたびに呼ばれる関数
+    のポインタ．この関数のプロトタイプは，
+
+    void Foo(int event, int x, int y, int flags, void* param);
+
+    となる． ここで，event は CV_EVENT_* のいずれかである． x と y
+    は，（ウィンドウ座標系ではなく）画像座標系内でのマウスポインタの座
+    標であり， flags は，CV_EVENT_FLAG の論理和となる． param は，ユー
+    ザによって定義されるパラメータで 関数 cvSetMouseCallbackに渡される． 
+param
+    コールバック関数に渡されるパラメータで，ユーザによって定義される． 
+
+関数 cvSetMouseCallbackは， 指定されたウィンドウ内で発生するマウスイベ
+ントに対するコールバック関数を設定する．これがどのように動作するかを見
+たい場合は，opencv/samples/c/ffilldemo.cデモを参照すること． 
+
+ \end{verbatim}
+}
+
+これらを使ったサンプルプログラムを以下に紹介する．
+
+{%\scriptsize
+\listinginput[1]{1}{sample7.c}
+}
+
+{%\scriptsize
+\listinginput[1]{1}{sample8.c}
+}
+
+
+\begin{excersize}{課題5}
+ \begin{enumerate}
+  \item マウスイベントあるいは，トラックバーを用いて画像処理のパラメー
+    タを変更させるプログラムを作成せよ．例えば，トラックバーの値で二値
+    化のしきい値を決めるようなプログラムである．また，実行画面をキャプチャして画像として保存せよ．
+ \end{enumerate}
+\end{excersize}
+
+
+\section{デバイスプログラミング}
+
+\subsection{デバイスドライバ}
+
+コンピュータには様々なハードウェアが接続されており，接続されているハー
+ドウェアをデバイスと呼ぶ．デバイスの例としては，キーボード，マウス，プ
+リンタ，ネットワークカード，CDドライブ，USB等がある．
+%
+各デバイスへの物理的なアクセス方法(デバイスを制御するLSI等への信号操作
+など)はデバイス毎に異なるが，コンピュータのプログラムからはそれらの物
+理的な操作を隠蔽し，デバイスを抽象化する(hardware abstraction)ことで，
+統一的に扱うことができるようにしている．
+%
+デバイスを抽象化するためのシステムプログラムを，{\gt デバイスドライバ}
+と呼ぶ(デバドラ，ドライバなどとも呼ばれる)．デバイスドライバはOSに組み
+込まれているが，OSに組み込まれていない新しいデバイスを接続する場合はデ
+バイスドライバをインストールする必要がある(WindowsでもLinuxでも)．
+
+Linuxのデバイスドライバは，OSに最初から組み込まれているものと，
+OS実行中に組み込んだり外したりできるものがある．後者は，
+\verb+/sbin/lsmod+によって現在組み込まれているドライバのリストを見るこ
+とができる．
+\begin{commandline}
+ \begin{verbatim}
+% /sbin/lsmod
+ \end{verbatim}
+\end{commandline}
+以下は実行結果で，OS実行中に組み込まれたデバイスドライバのリストである
+(実際にはOS起動直後に自動的に組み込まれている)．
+\begin{commandline}
+\scriptsize
+ \begin{verbatim}
+Module                  Size  Used by
+uvcvideo               48772  0 
+compat_ioctl32          5376  1 uvcvideo
+videodev               30464  1 uvcvideo
+v4l1_compat            16388  2 uvcvideo,videodev
+v4l2_common            20608  2 uvcvideo,videodev
+iptable_filter          6912  0 
+ip_tables              16324  1 iptable_filter
+ip6table_filter         6784  0 
+ip6_tables             17476  1 ip6table_filter
+x_tables               18308  2 ip_tables,ip6_tables
+af_packet              29064  2 
+ipv6                  268280  16 
+... (略) ...
+soundcore              11460  1 snd
+snd_page_alloc         14472  2 snd_hda_intel,snd_pcm
+sg                     37036  0 
+ehci_hcd               35340  0 
+sd_mod                 31232  3 
+uhci_hcd               27024  0 
+usbcore               124268  4 uvcvideo,ehci_hcd,uhci_hcd
+... (略) ...
+ \end{verbatim}
+\end{commandline}
+例えば，{\small\verb+soundcore+}はサウンドデバイスの
+{\small\verb+e1000+}はネットワークカードの，
+{\small\verb+uvcvideo+}はカメラのデバイスドライバである．
+
+\subsection{デバイスファイル}
+デバイスファイルは，UNIXシステムで様々なデバイスへのアクセス方法を統一
+的にするための概念である．
+
+以下のコマンドを実行してみよう．
+\begin{commandline}
+ \begin{verbatim}
+% ls -l /dev
+ \end{verbatim}
+\end{commandline}
+すると，以下のように\verb|/dev|ディレクトリの下にあるデバイスファイルの一覧が表示される．
+\begin{commandline}
+\scriptsize
+ \begin{verbatim}
+合計 4
+drwxr-xr-x  12 root root      6920 2009-05-30 21:56 .
+drwxr-xr-x  21 root root      4096 2009-05-30 01:05 ..
+drwxr-xr-x   6 root root       140 2009-05-30 21:56 .udev
+crw-------   1 root video  10, 175 2009-05-30 01:05 agpgart
+crw-rw----+  1 root audio  14,   4 2009-05-29 16:07 audio
+prw-------   1 root root         0 2009-05-29 16:07 blog
+prw-------   1 root root         0 2009-05-29 16:07 bootsplash
+drwxr-xr-x   3 root root        60 2009-05-30 01:03 bus
+lrwxrwxrwx   1 root root         3 2009-05-30 01:05 cdrom -> sr0
+crw-------   1 root root    5,   1 2007-09-22 06:50 console
+lrwxrwxrwx   1 root root        11 2009-05-30 01:05 core -> /proc/kcore
+drwxr-xr-x   2 root root        60 2009-05-29 16:06 cpu
+crw-rw----   1 root root   10,  63 2009-05-30 01:05 device-mapper
+drwxr-xr-x   6 root root       120 2009-05-30 01:03 disk
+crw-rw----+  1 root audio  14,   3 2009-05-29 16:07 dsp
+lrwxrwxrwx   1 root root         3 2009-05-30 01:05 dvd -> sr0
+crw-rw----   1 root video  29,   0 2009-05-30 01:03 fb0
+lrwxrwxrwx   1 root root        13 2009-05-30 01:05 fd -> /proc/self/fd
+crw--w--w-   1 root root    1,   7 2009-05-30 01:03 full
+crw-rw----   1 root root   10, 200 2007-09-22 06:50 fwmonitor
+crw-rw----   1 root root   10, 228 2009-05-30 01:03 hpet
+                 :
+                 :
+ \end{verbatim}
+\end{commandline}
+ここで，行頭の文字がb もしくはc となっているのが，デバイスファイルであ
+る．デバイスファイルは形式的には\verb|/dev|ディレクトリの下にある通常
+のファイルのように表されるが，これらのファイルは，そのデバイスに割り当
+てられたデバイス番号などのほんのわずかな情報しか持っていない，実体のな
+いファイルである．しかし，これらのファイルに対して，\verb|read()|や
+\verb|write()|などのシステムコールを通じて入出力の要求がなされると，カー
+ネル内に組み込まれたそれぞれのデバイス専用のデバイスドライバが呼び出さ
+れ，必要な処理が行われるようになっている．この仕組みによって，ユーザは
+それぞれのハードウェアの構造を意識することなく，あたかも一般のファイル
+を扱うのと同じようにデバイスをコントロールすることができるのである．
+
+
+\subsection{カメラデバイス}
+
+カメラのデバイスファ
+イルは，\verb|/dev/video|である．このファイ
+ルにデータを書いたり読んだりすることで，カメラとのデータの送受
+信が行える．
+
+カメラデバイスの制御はVideo for Linuxと呼ばれるAPIの仕様に基づいて行う．
+この仕様の詳細は
+\url{http://www.linuxtv.org/downloads/video4linux/API/V4L2_API/spec-single/v4l2.html}
+にあり，今回利用するソースコードもこのサンプルプログラムである．
+
+まずシステムコール\verb|open()|でカメラデバイスファイルを開き，次に
+\verb|ioctl()|でパラメータの設定を行う．
+最後に\verb|close()|でデバイスファイルを閉じて処理を終了する．
+
+以下で各システムコールの詳細を述べる．
+
+\subsubsection*{デバイスのオープン　open()}
+\begin{examplecode}
+ \begin{verbatim}
+#include <fcntl.h>
+
+int open(char *path, int oflag);
+
+path           : パス名
+oflag          : ファイルステータスフラグ
+ \end{verbatim}
+\end{examplecode}
+\verb|open()|システムコールは，第1引数のパス名\verb|path|で指定された
+デバイスを，第2引数のファイルステータスフラグ\verb|oflag|の値に従って
+オープンする．ファイルステータスフラグ\verb|oflag|には
+\tablename\ref{table:oflag}に示すフラグを論理和で複数個組み合わせるこ
+とができる．
+
+\begin{table}[hbt]
+ \begin{center}
+  \caption{\label{table:oflag}ファイルステータスフラグ}
+  \begin{tabular}{ll}
+   \Hline
+   フラグ & ファイルの処理形態\\
+   \hline
+   O\_RDONLY & 読み出しのみ行う\\
+   O\_WRONLY & 書き込みのみ行う \\ 
+   O\_RDWR & 読み取り／書き込みの両方を行う\\
+   O\_NDELAY   & オープンのブロックをするかしないかを設定する \\
+   O\_APPEND & 追加書き込みを行う．ファイルポインタをファイルの最後に設定する \\
+   O\_SYNC & ファイルデータとファイルステータスが更新されるまで書き込まない \\
+   O\_CREAT   & ファイルが存在しない場合に作成する \\
+   O\_TRUNC & ファイルが存在する場合にその大きさを0にする \\   
+   O\_EXCL & O\_CREATがセットされている場合， そのファイルが存在していればエラーを返す\\
+   \Hline
+  \end{tabular}
+ \end{center}
+\end{table}
+デバイスのオープンに成功すると，返り値としてファイルディスクリプタが得
+られる．ファイルディスクリプタとはオープンしたファイルに割り当てられた
+固有の番号のことで，以後デバイスへの入出力はこのファイルディスクリプタ
+を通して行われる．何らかの理由でデバイスのオープンに失敗した場合は，返
+り値として$-1$が返される．
+
+\subsubsection*{デバイスの設定　ioctl()}
+\begin{examplecode}
+ \begin{verbatim}
+#include <sys/ioctl.h>
+
+int ioctl(ind fd, int request, char *arg);
+
+fd               : ファイルディスクリプタ
+request          : 処理要求
+arg              : 属性情報
+ \end{verbatim}
+\end{examplecode}
+\verb|ioctl()|システムコールは，第1引数にデバイスのファイルディスクリプタ\verb|fd|を指定し，このデバイスに対して第2引数の処理要求\verb|request|にしたがって，第3引数\verb|arg|で参照する属性情報をデバイスに設定する．
+デバイスの設定に失敗すると$-1$を返す．
+第2引数\verb|request|に与えられる処理要求はデバイスによって異なる．
+カメラの場合のパラメータについては後述する．
+
+第3引数\verb|arg|の属性情報の構造はデバイスの種類と処理要求によって変
+化する．例えば，ここで用いるサウンドデバイスの属性情報は\verb|int|型へのポ
+インタであるが，次章で扱うシリアル通信の属性情報は通信時の種々の情報を
+格納した構造体のポインタとして与えなければならない．
+
+\subsubsection*{デバイスのクローズ　close()}
+\begin{examplecode}
+ \begin{verbatim}
+#include <fcntl.h>
+
+int close(int fd);
+
+fd             : ファイルディスクリプタ
+ \end{verbatim}
+\end{examplecode}
+\verb|close()|システムコールは，\verb|open()|システムコールの返り値で
+得られたファイルディスクリプタ\verb|fd|を指定して呼び出すことで，この
+指定されたデバイスをクローズする．何らかの理由でクローズに失敗した場合
+には$-1$を返す．
+
+\subsection{カメラデバイスの設定}
+
+カメラデバイスの設定はシステムコール\verb|ioctl()|を用いて行う．
+カメラデバイスの設定に用いられる\verb|ioctl|の第2引数(処理要求)を\tablename\ref{table:camera_request}に示す．
+\begin{table}[ht]
+ \begin{center}
+  \caption{\label{table:camera_request}カメラデバイスに与えられる処理要求}
+  \begin{tabular}{ll}
+   \Hline
+   処理要求 & 要求する処理内容 \\
+   \hline
+   VIDIOC\_STREAMON & 入力ストリーム開始 \\
+   VIDIOC\_STREAMOFF & 入力ストリーム停止 \\
+   VIDIOC\_REQBUFS & 画像データバッファの要求 \\
+   VIDIOC\_DQBUFS & １フレーム分の画像バッファを取り出す \\
+   VIDIOC\_DQBUFS & １フレーム分の画像バッファをキューに入れる \\
+   VIDIOC\_QUERYBUFS & 画像バッファ情報の問い合わせ\\
+   VIDIOC\_QUERYCAP & デバイスの能力の問い合わせ\\
+   VIDIOC\_S\_FMT & 画像フォーマットを設定する\\
+   \Hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\subsection{mmapによる入出力}
+
+カメラのデバイスからのデータの読み書きはread/writeも利用できるが，ここで
+はmmap関数を利用する．
+
+\begin{examplecode}
+ \begin{verbatim}
+#include <sys/mman.h>
+
+void *mmap(void *start, size_t length, int prot, int flags,
+           int fd, off_t offset);
+
+int munmap(void *start, size_t length);
+start         : マップするメモリの先頭アドレス
+length        : ファイルをメモリにマップする範囲
+port          : メモリ保護の方法，実行可能，読み込み可能，書き込み可能等
+flags         : マップ時のオプション,
+fd            : ファイルディスクリプタ
+offset        : マップするファイルの先頭アドレスのfdからのオフセット
+ \end{verbatim}
+\end{examplecode}
+
+mmap() 関数は、ファイル記述子 (file descriptor) fd で指定されたファイル
+(もしくはその他のオブジェクト) の、オフセット offset から length バイト
+の範囲をメモリにマップする (張り付ける) 。このとき、なるべくメモリ上の
+start アドレスから始めるようにマップする。実際には、このアドレスは関数に
+対してのヒントでしかなく、通常は 0 を指定する。実際にオブジェクトがマッ
+プされたアドレスは mmap() の返り値となり、決して 0 にはなることはない。 
+
+flagsとしては以下のようなオプションを利用できる．
+\begin{itemize}{
+\item{MAP\_FIXED}{}
+指定されたアドレス以外のアドレスにマッピングを行なわない。 start と len
+     で指定されたメモリ領域が既存のマッピングのページと重なる場合、既存
+     のマッピングの重なった部分は捨てられる。もし指定されたアドレスが使
+     用できない場合、 mmap() は失敗する。 MAP\_FIXED を指定した場合は
+     start はページサイズの倍数でなくてはいけない。このオプションは使用
+     しない方が良い。 }
+\item{MAP\_SHARED}{
+このマッピングを、このオブジェクトをマップした他の全てのプロセスと共有す
+     る。この領域への保存は、ファイルへの書き込みと等価である。ただしファ
+     イルが実際に更新されるのは、 msync(2) または munmap(2) が呼ばれたと
+     きである。 }
+\item{MAP\_PRIVATE}{プライベートな copy-on-write (書き込み時コピー) マッ
+     プを生成する。この領域への書き込みは、オリジナルのファイルに影響し
+     ない。 mmap() の呼び出し後にオリジナルのファイルに対して行われた変
+     更が、マップ領域に反映されるかどうかは規定されていない。 }
+\end{itemize}
+MAP\_SHARED と MAP\_PRIVATE は、必ずどちらかひとつを指定しなければならない。 
+
+
+mmap関数を用いることでデータをデバイスからメインメモリにコピーする必要が
+なく，実際はデバイス上に存在するデータを，あたかもメインメモリにあるよう
+にアクセスすることが出来る．
+
+なお，今回演習で利用するカメラはread/writeに対応していない．
+
+\subsection{サンプルプログラム}
+
+巻末に紹介したプログラムをコンパイルし実行すると
+{\tt test.ppm}というファイルが作られる． gnome-openというコマンドはフォ
+ルダでファイルをダブルクリックして画像を表示するのと同等の処理を行うプ
+ログラムである．
+\begin{commandline}
+ \begin{verbatim}
+ gcc -o capture capture.c
+ ./capture
+ gnome-open test.ppm
+ \end{verbatim}
+\end{commandline}
+
+\subsection{画像ファイルフォーマット}
+
+このサンプルプログラムは{\tt test.ppm}という画像ファイルが作られた．
+この画像ファイルは Portable Pixel Map 形式と呼ばれる，もっとも単純な
+ファイルフォーマットである．
+
+ファイルフォーマットは
+ \begin{verbatim}
+<<ファイル形式識別記号>>\n
+<<x方向のピクセル数>> <<y方向のピクセル数>>\n
+<<最大輝度>>\n
+<<画像データ(RGB順，左から右，上から下へ走査した順)>>
+ \end{verbatim}
+となっており，ファイル形式の識別には以下の種類がある．
+ascii形式とraw形式は画像データをascii文字列として書き込むか
+rawデータとして書き込むかの違いである．
+\begin{table}[ht]
+ \begin{center}
+  \caption{\label{table:camera_request}カメラデバイスに与えられる処理要求}
+  \begin{tabular}{ll}
+   \Hline
+   \Hline
+   ファイル形式識別記号 & 識別子 \\
+   \hline
+P1 & 2値 ascii形式 PBM形式  \\
+P2 & グレースケール ascii形式 PGM形式  \\
+P3 & フルカラー ascii形式 PPM形式  \\
+P4 & 2値 raw形式 PBM形式  \\
+P5 & グレースケール raw形式 PGM形式  \\
+P6 & フルカラー raw形式 PPM形式 \\
+   \Hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+
+このようにカメラデバイスの制御と入出力は，
+ファイルの読み書きと同様のread/writeを用いた入出力が可能であるということ
+注意して欲しい．
+ソフトウェアシステムの観点からみると，
+カメラはファイルとして仮想化されていることで，
+対象がカメラであるかファイルであるかに関わらず
+同じファイル入出力関数が利用できている．
+
+\begin{excersize}{課題6}
+ \begin{enumerate}
+  \item read/write, mmapを使ってカメラデバイスから取得した画像に対して，OpenCV
+    の画像処理関数を適用するプログラムを書いてみよ．
+ \end{enumerate}
+\end{excersize}
+
+
+{capture.c
+\scriptsize
+\listinginput[1]{1}{capture.c}
+}
+
+\begin{excersize}{レポート課題}
+ \begin{enumerate}
+  \item 作成したプログラムの課題番号並びに実行中の画像．サンプルプログ
+    ラムに紹介した物以外のプログラムが有れば，フローチャート等を使い説
+    明せよ．
+  \item RGB空間，YUV空間，HSI空間についてそれぞれ説明せよ
+  \item Sobel, Laplacian, Cannyのエッジ抽出について計算方法を示せ
+  \item ガウシアンフィルタ，適応的二値化(cvAdaptiveThreshold)について
+    説明せよ
+  \item その他，自分で調べた画像処理関数があれば説明せよ．
+  \item レポートはOpenOffice(アプリケーション＞オフィス＞OpenOffice.org
+    WordProcessor)を利用し，PDFを作成しメールにて
+    (k-okada-enshu@jsk.t.u-tokyo.ac.jp) まで提出せよ．締切りは１週間後．
+ \end{enumerate}
+\end{excersize}
+
+\end{document}
+
