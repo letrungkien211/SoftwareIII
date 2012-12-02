@@ -8,9 +8,9 @@
 (defun sim-update () (send *sim* :update)) ;;timer-jobに登録するupdate関数
 
 #|********************************************
- 構築したrobot-server-simulatorをeus-serverとして
- 別プロセスで起動し、それに対してsocketをconnectして
- 指令を送ることで、描画更新廻りの問題を解決する
+構築したrobot-server-simulatorをeus-serverとして
+別プロセスで起動し、それに対してsocketをconnectして
+指令を送ることで、描画更新廻りの問題を解決する
 **********************************************|#
 (defvar *host* "127.0.0.1")
 ;;world-objsは世界を記述するモデル
@@ -23,7 +23,7 @@
     (cond 
      ((not *sim*)
       (setq *sim* (instance daisya-server-simulator :init
-			       *daisya* world-objs))
+			    *daisya* world-objs))
       (send *sim* :start)
       (unix:usleep (* 500 1000))
       (warn "start eus server~%")
@@ -36,8 +36,8 @@
     ))
 
 #|***********************************************
- eus-serverで別プロセスで起動したrobot-server-simulator
- に対して同じinterfaceで指令を送るためのクラス
+eus-serverで別プロセスで起動したrobot-server-simulator
+に対して同じinterfaceで指令を送るためのクラス
 ************************************************|#
 (defvar *rs-sim* nil)
 (defvar *vs-sim* nil)
@@ -45,8 +45,8 @@
   (&key (port 5000) (host *host*))
   (setq *rs-sim* 
 	(instance robotsim-server-connector :init 
-					    :host host 
-					    :port port)))
+		  :host host 
+		  :port port)))
 (defun connect-visionsim-server
   ()
   (setq *vs-sim* *rs-sim*))
@@ -68,25 +68,25 @@
    (let ((com "(send *sim*") ret)
      (sys::mutex
       *sim-lock*
-     (finish-output server-strm) ;;最初に綺麗にする？
-     (cond 
-      ((not command) 
-       (return-from :send)
-       )
-      (t
-       (dolist (c command)
-	 (setq com (concatenate string com " " 
-				(format nil "~a" c))))
-       (setq com (concatenate string com ")~%"))
-       ;;(print com)
-       (format server-strm com)
-       ;;
-       ;;ちょっと休むか
-       (unix:usleep 10000)
-       ;;(when (select-stream (list server-strm) 5)
-       (setq ret (read server-strm))
-       ))
-     ret)))
+      (finish-output server-strm) ;;最初に綺麗にする？
+      (cond 
+       ((not command) 
+	(return-from :send)
+	)
+       (t
+	(dolist (c command)
+	  (setq com (concatenate string com " " 
+				 (format nil "~a" c))))
+	(setq com (concatenate string com ")~%"))
+	;;(print com)
+	(format server-strm com)
+	;;
+	;;ちょっと休むか
+	(unix:usleep 10000)
+	;;(when (select-stream (list server-strm) 5)
+	(setq ret (read server-strm))
+	))
+      ret)))
   ;;何も定義されていないmethodが呼ばれた場合、これが呼ばれる.
   ;;  このときmethod名込みで、引数とともにargsに渡される
   (:nomethod
@@ -100,8 +100,8 @@
   )
 
 #|*********************************************
-   ロボットと世界を持つsimulatorクラスの定義
-    これだけだと、何もおきない
+ロボットと世界を持つsimulatorクラスの定義
+これだけだと、何もおきない
 **********************************************|#
 (defclass robot-server-simulator
   :super propertied-object
@@ -181,15 +181,15 @@
   )
 
 #|*********************************************
-   台車のためのserver-simulator
-     台車のためのarm,wheel,sensor状態を更新する中身が記述される
+台車のためのserver-simulator
+台車のためのarm,wheel,sensor状態を更新する中身が記述される
 
-   <実装method>
-    daisya-velocity-vector
+<実装method>
+daisya-velocity-vector
 
-   <未実装method>
-    wheelのシミュレーションは難しいため実装していない
-      どのようにwheelを動かすと、台車の位置がどうなるかは計算で求めるのは困難なため
+<未実装method>
+wheelのシミュレーションは難しいため実装していない
+どのようにwheelを動かすと、台車の位置がどうなるかは計算で求めるのは困難なため
 
 **********************************************|#
 ;;wheelの制御モード(予約番号)  robot-client.lと共通
